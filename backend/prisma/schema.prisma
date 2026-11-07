@@ -1,0 +1,258 @@
+// Kardify database schema (PostgreSQL, Prisma 7)
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Language {
+  en
+  ar
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CardStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum AnalyticsEventType {
+  VIEW
+  QR_SCAN
+  SHARE
+  CONTACT_DOWNLOAD
+  APPLE_WALLET_ADD
+  GOOGLE_WALLET_ADD
+  WHATSAPP_CLICK
+  WEBSITE_CLICK
+  EMAIL_CLICK
+  PHONE_CLICK
+  LOCATION_CLICK
+  SOCIAL_CLICK
+}
+
+enum WalletPlatform {
+  APPLE
+  GOOGLE
+}
+
+enum WalletPassStatus {
+  ACTIVE
+  REVOKED
+}
+
+model User {
+  id                  String    @id @default(uuid()) @db.Uuid
+  firstName           String    @db.VarChar(80)
+  lastName            String    @db.VarChar(80)
+  email               String    @unique @db.VarChar(254)
+  passwordHash        String
+  emailVerified       Boolean   @default(false)
+  emailVerifiedAt     DateTime?
+  profileImage        String?
+  preferredLanguage   Language  @default(en)
+  role                Role      @default(USER)
+  /// Set by an admin; suspended users cannot sign in and all sessions are revoked.
+  suspendedAt         DateTime?
+  termsAcceptedAt     DateTime
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  /// Default card language, template, colours and notification preferences.
+  preferences         Json      @default("{}")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  cards                   BusinessCard[]
+  sessions                Session[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailChangeTokens       EmailChangeToken[]
+  adminAuditLogs          AdminAuditLog[]
+
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model BusinessCard {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @db.Uuid
+  name           String     @db.VarChar(120)
+  slug           String     @unique @db.VarChar(160)
+  publicId       String     @unique @db.VarChar(32)
+  jobTitle       String?    @db.VarChar(120)
+  companyName    String?    @db.VarChar(120)
+  description    String?    @db.VarChar(600)
+  profileImage   String?
+  companyLogo    String?
+  email          String?    @db.VarChar(254)
+  phone          String?    @db.VarChar(40)
+  whatsapp       String?    @db.VarChar(40)
+  website        String?    @db.VarChar(500)
+  address        String?    @db.VarChar(300)
+  mapsUrl        String?    @db.VarChar(1000)
+  /// Array of { platform, url, visible, label? }
+  socialLinks    Json       @default("[]")
+  /// Structured design settings (template, colours, fonts, layout ...)
+  designSettings Json       @default("{}")
+  /// QR code customisation { fgColor, bgColor, withLogo }
+  qrSettings     Json       @default("{}")
+  status         CardStatus @default(DRAFT)
+  language       Language   @default(en)
+  publishedAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analytics    CardAnalytics[]
+  walletPasses WalletPass[]
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@map("business_cards")
+}
+
+model CardAnalytics {
+  id               String             @id @default(uuid()) @db.Uuid
+  cardId           String             @db.Uuid
+  eventType        AnalyticsEventType
+  /// SHA-256 of an anonymous, random per-browser session id. No IP or UA stored.
+  visitorSessionId String?            @db.VarChar(64)
+  /// Referrer origin only (no path / query string) to avoid leaking personal data.
+  referrer         String?            @db.VarChar(255)
+  /// Optional small detail, e.g. the social platform clicked.
+  meta             String?            @db.VarChar(40)
+  createdAt        DateTime           @default(now())
+
+  card BusinessCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, createdAt])
+  @@index([cardId, eventType, createdAt])
+  @@index([cardId, visitorSessionId])
+  @@map("card_analytics")
+}
+
+model WalletPass {
+  id               String           @id @default(uuid()) @db.Uuid
+  cardId           String           @db.Uuid
+  platform         WalletPlatform
+  /// Google Wallet object id (issuerId.objectSuffix). Null for Apple.
+  externalObjectId String?          @db.VarChar(255)
+  /// Apple pass serial number (also used as a stable id for Google).
+  serialNumber     String           @unique @db.VarChar(64)
+  status           WalletPassStatus @default(ACTIVE)
+  createdAt        DateTime         @default(now())
+  lastUpdatedAt    DateTime         @default(now())
+
+  card          BusinessCard              @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  registrations AppleDeviceRegistration[]
+
+  @@unique([cardId, platform])
+  @@index([platform, lastUpdatedAt])
+  @@map("wallet_passes")
+}
+
+/// Apple Wallet devices registered for pass update push notifications (PassKit web service).
+model AppleDeviceRegistration {
+  id                      String   @id @default(uuid()) @db.Uuid
+  walletPassId            String   @db.Uuid
+  deviceLibraryIdentifier String   @db.VarChar(255)
+  pushToken               String   @db.VarChar(255)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  walletPass WalletPass @relation(fields: [walletPassId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceLibraryIdentifier, walletPassId])
+  @@index([deviceLibraryIdentifier])
+  @@map("apple_device_registrations")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique @db.VarChar(64)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.VarChar(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailChangeToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  newEmail  String   @db.VarChar(254)
+  tokenHash String   @unique @db.VarChar(64)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_change_tokens")
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  userAgent  String?   @db.VarChar(255)
+  ipAddress  String?   @db.VarChar(64)
+  rememberMe Boolean   @default(false)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastUsedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+/// Every action performed through the admin panel.
+model AdminAuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  /// Null if the acting admin was later deleted.
+  adminId    String?  @db.Uuid
+  adminEmail String   @db.VarChar(254)
+  action     String   @db.VarChar(64)
+  targetType String   @db.VarChar(32)
+  targetId   String?  @db.VarChar(64)
+  /// Small, non-sensitive details (e.g. previous and new values).
+  meta       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  admin User? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@map("admin_audit_logs")
+}
