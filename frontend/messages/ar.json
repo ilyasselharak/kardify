@@ -850,7 +850,8 @@
       "overview": "نظرة عامة",
       "users": "المستخدمون",
       "cards": "البطاقات",
-      "audit": "سجل التدقيق"
+      "audit": "سجل التدقيق",
+      "companies": "الشركات"
     },
     "stats": {
       "users": "المستخدمون",
@@ -971,7 +972,26 @@
     "noCompany": "بدون شركة",
     "clearCompany": "إزالة فلتر الشركة",
     "companyCount": "{count, plural, zero {لا بطاقات} one {بطاقة واحدة} two {بطاقتان} few {# بطاقات} many {# بطاقة} other {# بطاقة}}",
-    "filterByCompany": "عرض هذه الشركة فقط"
+    "filterByCompany": "عرض هذه الشركة فقط",
+    "companies": {
+      "totalCompanies": "الشركات",
+      "totalPeople": "أشخاص لديهم بطاقة شركة",
+      "totalPeopleHint": "يُحتسب الشخص مرة واحدة لكل شركة",
+      "withoutCompany": "بطاقات بدون شركة",
+      "withoutCompanyHint": "حقل الشركة فارغ",
+      "search": "ابحث عن شركة…",
+      "empty": "لا توجد شركات بعد. تظهر عندما يضيف العملاء شركة إلى بطاقاتهم.",
+      "noResults": "لا توجد شركة تطابق البحث.",
+      "viewCards": "عرض البطاقات",
+      "columns": {
+        "company": "الشركة",
+        "people": "عدد الأشخاص",
+        "cards": "البطاقات",
+        "published": "المنشورة",
+        "lastUpdated": "آخر تحديث",
+        "actions": "إجراءات"
+      }
+    }
   },
   "templates": {
     "title": "القوالب",

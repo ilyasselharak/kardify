@@ -1,4 +1,4 @@
-import { BarChart3, CreditCard, FileText, HelpCircle, LayoutDashboard, LayoutTemplate, ScrollText, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Building2, CreditCard, FileText, HelpCircle, LayoutDashboard, LayoutTemplate, ScrollText, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -42,6 +42,7 @@ export const ADMIN_NAV: { group: "admin" | "account"; items: NavItem[] }[] = [
       { href: "/dashboard/admin", key: "overview", admin: true, icon: LayoutDashboard, match: (p) => p === "/dashboard/admin" },
       { href: "/dashboard/admin/users", key: "users", admin: true, icon: Users, match: under("/dashboard/admin/users") },
       { href: "/dashboard/admin/cards", key: "cards", admin: true, icon: CreditCard, match: under("/dashboard/admin/cards") },
+      { href: "/dashboard/admin/companies", key: "companies", admin: true, icon: Building2, match: under("/dashboard/admin/companies") },
       { href: "/dashboard/admin/audit", key: "audit", admin: true, icon: ScrollText, match: under("/dashboard/admin/audit") },
     ],
   },

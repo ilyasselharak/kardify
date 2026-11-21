@@ -263,7 +263,7 @@ run('Kardify API (e2e)', () => {
 
     // Company list + company filter
     const companies = await user.get('/api/admin/companies').expect(200);
-    expect(companies.body.items).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Acme Corp' })]));
+    expect(companies.body.items).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Acme Corp', people: 1, cards: 1 })]));
     const byCompany = await user.get('/api/admin/cards?company=acme%20corp').expect(200);
     expect(byCompany.body.items.map((c: { id: string }) => c.id)).toContain(cardId);
     const none = await user.get('/api/admin/cards?company=nobody-inc').expect(200);

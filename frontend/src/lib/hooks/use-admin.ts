@@ -73,7 +73,7 @@ export const useAdminSetCardStatus = () =>
 export const useAdminDeleteCard = () => useAdminMutation((id: string) => api.delete<void>(`/admin/cards/${id}`));
 
 export interface AdminCompanies {
-  items: { name: string; cards: number }[];
+  items: { name: string; people: number; cards: number; activeCards: number; lastUpdated: string }[];
   noCompany: number;
 }
 

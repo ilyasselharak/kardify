@@ -223,14 +223,23 @@ export class AdminService {
     };
   }
 
-  /** Every company used on a card (case-insensitive groups) with its card count, for filtering. */
+  /**
+   * Every company used on a card, grouped case-insensitively (most common spelling shown), with
+   * how many people hold a card from it, total and published cards, and the latest card update.
+   */
   async listCompanies() {
-    const rows = await this.prisma.$queryRaw<{ name: string; cards: number }[]>`
-      SELECT MODE() WITHIN GROUP (ORDER BY TRIM("companyName")) AS name, COUNT(*)::int AS cards
+    const rows = await this.prisma.$queryRaw<
+      { name: string; people: number; cards: number; activeCards: number; lastUpdated: Date }[]
+    >`
+      SELECT MODE() WITHIN GROUP (ORDER BY TRIM("companyName")) AS name,
+             COUNT(DISTINCT "userId")::int AS people,
+             COUNT(*)::int AS cards,
+             COUNT(*) FILTER (WHERE status = 'ACTIVE')::int AS "activeCards",
+             MAX("updatedAt") AS "lastUpdated"
       FROM business_cards
       WHERE "companyName" IS NOT NULL AND TRIM("companyName") <> ''
       GROUP BY LOWER(TRIM("companyName"))
-      ORDER BY cards DESC, name ASC
+      ORDER BY people DESC, cards DESC, name ASC
       LIMIT 1000`;
     const noCompany = await this.prisma.businessCard.count({ where: { companyName: null } });
     return { items: rows, noCompany };

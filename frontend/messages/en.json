@@ -850,7 +850,8 @@
       "overview": "Overview",
       "users": "Users",
       "cards": "Cards",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "companies": "Companies"
     },
     "stats": {
       "users": "Users",
@@ -971,7 +972,26 @@
     "noCompany": "No company",
     "clearCompany": "Clear company filter",
     "companyCount": "{count, plural, one {# card} other {# cards}}",
-    "filterByCompany": "Show only this company"
+    "filterByCompany": "Show only this company",
+    "companies": {
+      "totalCompanies": "Companies",
+      "totalPeople": "People with a company card",
+      "totalPeopleHint": "A person counts once per company",
+      "withoutCompany": "Cards without a company",
+      "withoutCompanyHint": "Company field left empty",
+      "search": "Search companies…",
+      "empty": "No companies yet. They appear when clients add a company to a card.",
+      "noResults": "No company matches your search.",
+      "viewCards": "View cards",
+      "columns": {
+        "company": "Company",
+        "people": "People",
+        "cards": "Cards",
+        "published": "Published",
+        "lastUpdated": "Last updated",
+        "actions": "Actions"
+      }
+    }
   },
   "templates": {
     "title": "Templates",
