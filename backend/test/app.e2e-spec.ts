@@ -98,6 +98,106 @@ run('Kardify API (e2e)', () => {
     await other.delete('/api/users/me').set('x-kardify-csrf', '1').send({ password });
   });
 
+  it('manages CVs: profile, autosave, privacy, sharing and ownership', async () => {
+    const csrf = { 'x-kardify-csrf': '1' };
+    const anon = () => request(app.getHttpServer());
+
+    // Profile is created on first read, pre-filled from the account.
+    const prof = await user.get('/api/cv-profile').expect(200);
+    expect(prof.body).toMatchObject({ fullName: 'E2E User', email });
+    await user.patch('/api/cv-profile').set(csrf).send({ professionalTitle: 'Engineer', linkedin: 'not-a-url' }).expect(400);
+    await user.patch('/api/cv-profile').set(csrf).send({ professionalTitle: 'Engineer', city: 'Rabat', summary: 'Builds things.' }).expect(200);
+
+    const created = await user.post('/api/cvs').set(csrf).send({ title: 'Backend CV', template: 'technical' }).expect(201);
+    const cvId: string = created.body.id;
+    expect(created.body).toMatchObject({ visibility: 'PRIVATE', publicLink: null, template: 'technical' });
+    expect(created.body.sections).toHaveLength(12);
+
+    // Autosave: whole collections replaced atomically; validation on dates and URLs.
+    await user.patch(`/api/cvs/${cvId}`).set(csrf).send({ experiences: [{ jobTitle: 'Dev', company: 'Acme', startDate: '2024-05', endDate: '2023-01' }] }).expect(400);
+    await user.patch(`/api/cvs/${cvId}`).set(csrf).send({ projects: [{ name: 'X', url: 'javascript:alert(1)' }] }).expect(400);
+    const saved = await user
+      .patch(`/api/cvs/${cvId}`)
+      .set(csrf)
+      .send({
+        headline: 'Backend Engineer',
+        design: { accentColor: '#006afe', spacing: 'compact' },
+        sections: [{ key: 'experience', enabled: true }, { key: 'skills', enabled: true }, { key: 'projects', enabled: false }],
+        experiences: [
+          { jobTitle: 'Senior Dev', company: 'Acme', startDate: '2022-01', current: true, endDate: '2023-01', responsibilities: 'APIs' },
+          { jobTitle: 'Dev', company: 'Beta', startDate: '2019-03', endDate: '2021-12' },
+        ],
+        skills: [{ name: 'NestJS', category: 'TECHNICAL', level: 5 }],
+        projects: [{ name: 'Hidden project' }],
+      })
+      .expect(200);
+    expect(saved.body.experiences.map((e: { company: string }) => e.company)).toEqual(['Acme', 'Beta']);
+    expect(saved.body.experiences[0].endDate).toBeNull(); // "current" clears the end date
+    expect(saved.body.sections[0].key).toBe('experience');
+
+    // Private by default: no public access even once a link exists.
+    const shared = await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ slug: `e2e-cv-${Date.now()}` }).expect(200);
+    const cvSlug: string = shared.body.publicLink.slug;
+    expect(shared.body.isPublic).toBe(false);
+    await anon().get(`/api/public/cvs/${cvSlug}`).expect(404);
+    await anon().get(`/api/public/cvs/${cvSlug}/pdf`).expect(404);
+
+    // Unlisted: reachable, but not indexable, never cached, hidden sections stripped.
+    await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ visibility: 'UNLISTED' }).expect(200);
+    const unlisted = await anon().get(`/api/public/cvs/${cvSlug}`).expect(200);
+    expect(unlisted.headers['x-robots-tag']).toContain('noindex');
+    expect(unlisted.headers['cache-control']).toBe('no-store');
+    expect(unlisted.body.indexable).toBe(false);
+    expect(unlisted.body.document.profile.professionalTitle).toBe('Backend Engineer');
+    expect(unlisted.body.document.projects).toEqual([]);
+    expect(JSON.stringify(unlisted.body)).not.toMatch(/Hidden project|userId|"cvId"/);
+
+    // Public: indexable. Disabling the link or downloads is enforced server-side.
+    await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ visibility: 'PUBLIC', allowDownload: false }).expect(200);
+    const pub = await anon().get(`/api/public/cvs/${cvSlug}`).expect(200);
+    expect(pub.body.indexable).toBe(true);
+    expect(pub.headers['x-robots-tag']).toBeUndefined();
+    const blocked = await anon().get(`/api/public/cvs/${cvSlug}/pdf`).expect(403);
+    expect(blocked.body.code).toBe('CV_DOWNLOAD_DISABLED');
+    await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ linkEnabled: false }).expect(200);
+    await anon().get(`/api/public/cvs/${cvSlug}`).expect(404);
+    await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ linkEnabled: true }).expect(200);
+
+    // Changing the slug retires the old URL; invalid / reserved slugs are rejected.
+    const renamed = await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ slug: `${cvSlug}-v2` }).expect(200);
+    await anon().get(`/api/public/cvs/${cvSlug}`).expect(404);
+    await anon().get(`/api/public/cvs/${renamed.body.publicLink.slug}`).expect(200);
+    await user.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ slug: 'admin' }).expect(400);
+
+    // Duplicate keeps content but starts private without a link.
+    const copy = await user.post(`/api/cvs/${cvId}/duplicate`).set(csrf).expect(201);
+    expect(copy.body).toMatchObject({ title: 'Backend CV (copy)', visibility: 'PRIVATE', publicLink: null });
+    expect(copy.body.experiences).toHaveLength(2);
+
+    const list = await user.get('/api/cvs').expect(200);
+    expect(list.body.stats).toMatchObject({ total: 2, public: 1 });
+    expect(list.body.stats.completion).toBeGreaterThan(30);
+
+    // Another account cannot read, edit, share, download or delete it.
+    const other = agent();
+    const otherEmail = `cv-other-${Date.now()}@example.com`;
+    await other.post('/api/auth/register').set(csrf).send({ firstName: 'C', lastName: 'O', email: otherEmail, password, confirmPassword: password, acceptTerms: true });
+    await other.post('/api/auth/verify-email').set(csrf).send({ token: tokenFrom('verifyEmail') });
+    await other.get(`/api/cvs/${cvId}`).expect(404);
+    await other.patch(`/api/cvs/${cvId}`).set(csrf).send({ title: 'Hacked' }).expect(404);
+    await other.patch(`/api/cvs/${cvId}/sharing`).set(csrf).send({ visibility: 'PUBLIC' }).expect(404);
+    await other.get(`/api/cvs/${cvId}/pdf`).expect(404);
+    await other.delete(`/api/cvs/${cvId}`).set(csrf).expect(404);
+    await other.delete('/api/users/me').set(csrf).send({ password });
+
+    // Render tokens are the only way to read a CV outside the owner session.
+    await anon().get('/api/cv-render/not-a-token').expect(404);
+
+    await user.delete(`/api/cvs/${copy.body.id}`).set(csrf).expect(204);
+    await user.delete(`/api/cvs/${cvId}`).set(csrf).expect(204);
+    await anon().get(`/api/public/cvs/${renamed.body.publicLink.slug}`).expect(404);
+  });
+
   it('dedupes repeated views from the same visitor', async () => {
     const visitor = agent();
     const r1 = await visitor.post(`/api/public/cards/${slug}/analytics`).set('x-kardify-csrf', '1').send({ eventType: 'VIEW' }).expect(202);

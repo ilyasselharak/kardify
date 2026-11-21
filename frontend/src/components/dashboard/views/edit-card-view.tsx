@@ -2,12 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import { CardWizard } from "@/components/wizard/card-wizard";
+import { CardEditor } from "@/components/editor/card-editor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCard } from "@/lib/hooks/use-cards";
 import { useErrorMessage } from "@/lib/hooks/use-error-message";
 import { ErrorState } from "../empty-state";
-import { PageHeader } from "../page-header";
+
+export { NewCardView } from "@/components/editor/new-card-view";
 
 export function EditCardView() {
   const { id } = useParams<{ id: string }>();
@@ -18,25 +19,18 @@ export function EditCardView() {
   return (
     <>
       <title>{`${t("editTitle")} · Kardify`}</title>
-      <PageHeader title={t("editTitle")} description={query.data?.name} />
       {query.isLoading ? (
-        <Skeleton className="h-[600px] rounded-2xl" />
+        <div className="grid gap-5 xl:grid-cols-[320px_1fr_360px]">
+          <Skeleton className="h-[640px] rounded-2xl" />
+          <Skeleton className="h-[420px] rounded-2xl" />
+          <Skeleton className="h-[640px] rounded-2xl" />
+        </div>
       ) : query.isError || !query.data ? (
         <ErrorState message={errorMessage(query.error)} onRetry={() => query.refetch()} retryLabel={tc("retry")} />
       ) : (
         // Keyed by id so the form re-initialises when navigating between cards.
-        <CardWizard key={query.data.id} card={query.data} />
+        <CardEditor key={query.data.id} card={query.data} />
       )}
-    </>
-  );
-}
-
-export function NewCardView() {
-  const t = useTranslations("wizard");
-  return (
-    <>
-      <PageHeader title={t("createTitle")} />
-      <CardWizard />
     </>
   );
 }

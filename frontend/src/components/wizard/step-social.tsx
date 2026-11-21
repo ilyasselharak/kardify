@@ -21,7 +21,7 @@ export function StepSocial() {
   const used = new Set(fields.map((f) => f.platform));
 
   return (
-    <div className="grid gap-6">
+    <div className="@container grid gap-6">
       <StepHeading title={t("title")} subtitle={t("subtitle")} />
 
       {fields.length === 0 && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{t("empty")}</p>}

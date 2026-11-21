@@ -4,13 +4,14 @@ import { ChevronRight, Download, Globe, Mail, MapPin, Phone, Share2 } from "luci
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { BusinessCardBack, pickContrast } from "@/components/cards/business-card";
+import { FaceBackground, PatternLayer } from "@/components/cards/card-parts";
 import { ShareDialog } from "@/components/cards/share-dialog";
 import { SocialIcon } from "@/components/cards/social-icons";
 import { WalletButtons } from "@/components/cards/wallet-buttons";
 import { LogoMark } from "@/components/brand/logo";
 import { Link } from "@/i18n/navigation";
 import type { PublicCard, ShareLinks, SocialLink } from "@/lib/api/types";
-import { FONT_CLASS, faceBackground, normalizeDesign } from "@/lib/design/templates";
+import { FONT_CLASS, normalizeDesign } from "@/lib/design/templates";
 import { mapsUrlFor, publicQrUrl, telUrl, trackEvent, vcardUrl, whatsappChatUrl } from "@/lib/public-card";
 import { cn, initials } from "@/lib/utils";
 
@@ -75,12 +76,14 @@ export function PublicCardView({ card, mode = "live", source }: { card: PublicCa
       <div className="mx-auto w-full max-w-md pb-10">
         {/* Hero */}
         <div className="relative px-5 pt-5">
-          <div className="relative overflow-hidden rounded-[28px] px-6 pt-8 pb-7 shadow-lifted" style={{ background: faceBackground(d), color: heroText }}>
+          <div className="@container relative overflow-hidden rounded-[28px] px-6 pt-8 pb-7 shadow-lifted" style={{ color: heroText, containerType: "inline-size" }}>
+            <FaceBackground face={d} image={d.backgroundImage} overlay={d.backgroundOverlay} />
+            <PatternLayer pattern={d.pattern} color={heroText} />
             {card.companyLogo && d.logoPosition !== "hidden" && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={card.companyLogo} alt="" className={cn("absolute top-5 h-8 w-auto max-w-[35%] object-contain", d.logoPosition === "top-start" ? "start-5" : "end-5")} />
+              <img src={card.companyLogo} alt="" className={cn("absolute top-5 z-10 h-8 w-auto max-w-[35%] object-contain", d.logoPosition === "top-start" ? "start-5" : "end-5")} />
             )}
-            <div className="flex flex-col items-center text-center">
+            <div className="relative flex flex-col items-center text-center">
               <div className="size-28 overflow-hidden bg-black/10 shadow-lg" style={{ borderRadius: photoRadius, boxShadow: `0 0 0 4px ${d.primaryColor}33` }}>
                 {card.profileImage ? (
                   // eslint-disable-next-line @next/next/no-img-element

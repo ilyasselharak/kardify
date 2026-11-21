@@ -21,9 +21,9 @@ export function StepContact() {
   const t = useTranslations("wizard.contact");
   const { register, formState: { errors } } = useFormContext<CardFormValues>();
   return (
-    <div className="grid gap-6">
+    <div className="@container grid gap-6">
       <StepHeading title={t("title")} subtitle={t("subtitle")} />
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 @lg:grid-cols-2">
         <FormField id="email" label={t("email")} optional error={errors.email?.message}>
           <IconInput icon={Mail} id="email" type="email" dir="ltr" placeholder="you@company.com" {...register("email")} />
         </FormField>

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { SOCIAL_PLATFORMS } from "@/lib/api/types";
 import {
-  BACKGROUND_TYPES, FONT_FAMILIES, FONT_SIZES, LAYOUTS, LOGO_POSITIONS, PHOTO_SHAPES, SOCIAL_ICON_STYLES, TEMPLATE_IDS,
+  BACK_LAYOUTS, BACKGROUND_TYPES, CONTACT_ICON_STYLES, FONT_FAMILIES, FONT_SIZES, LAYOUTS, LOGO_POSITIONS, PATTERNS, PHOTO_SHAPES,
+  SOCIAL_ICON_STYLES, TEMPLATE_IDS,
 } from "@/lib/design/types";
 
 const optionalText = (max: number) => z.string().trim().max(max, "tooLong");
@@ -29,6 +30,11 @@ export const designSchema = z.object({
   ...face,
   template: z.enum(TEMPLATE_IDS),
   primaryColor: hex,
+  secondaryColor: hex,
+  contactIconStyle: z.enum(CONTACT_ICON_STYLES),
+  pattern: z.enum(PATTERNS),
+  backgroundImage: z.string().max(1000).refine((v) => v === "" || v.startsWith("https://"), "urlInvalid"),
+  backgroundOverlay: z.number().int().min(0).max(90),
   fontFamily: z.enum(FONT_FAMILIES),
   fontSize: z.enum(FONT_SIZES),
   borderRadius: z.number().int().min(0).max(40),
@@ -36,7 +42,7 @@ export const designSchema = z.object({
   photoShape: z.enum(PHOTO_SHAPES),
   logoPosition: z.enum(LOGO_POSITIONS),
   socialIconStyle: z.enum(SOCIAL_ICON_STYLES),
-  back: z.object({ ...face, showQr: z.boolean(), tagline: z.string().max(120, "tooLong") }),
+  back: z.object({ ...face, layout: z.enum(BACK_LAYOUTS), showQr: z.boolean(), tagline: z.string().max(120, "tooLong") }),
 });
 
 export const socialLinkSchema = z.object({

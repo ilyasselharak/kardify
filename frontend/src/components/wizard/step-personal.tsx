@@ -15,9 +15,9 @@ export function StepPersonal() {
   const tc = useTranslations("common");
   const { register, control, formState: { errors } } = useFormContext<CardFormValues>();
   return (
-    <div className="grid gap-6">
+    <div className="@container grid gap-6">
       <StepHeading title={t("title")} subtitle={t("subtitle")} />
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 @lg:grid-cols-2">
         <Controller control={control} name="profileImage" render={({ field }) => (
           <ImageUpload label={t("profilePhoto")} purpose="profile" value={field.value} onChange={field.onChange} />
         )} />
@@ -28,7 +28,7 @@ export function StepPersonal() {
       <FormField id="name" label={t("name")} error={errors.name?.message}>
         <Input id="name" dir="auto" placeholder={t("namePlaceholder")} aria-invalid={!!errors.name} {...register("name")} />
       </FormField>
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 @lg:grid-cols-2">
         <FormField id="jobTitle" label={t("jobTitle")} optional error={errors.jobTitle?.message}>
           <Input id="jobTitle" dir="auto" placeholder={t("jobTitlePlaceholder")} {...register("jobTitle")} />
         </FormField>

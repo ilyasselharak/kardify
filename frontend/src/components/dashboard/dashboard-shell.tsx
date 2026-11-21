@@ -42,32 +42,35 @@ function SidebarNav({ onNavigate, isAdmin }: { onNavigate?: () => void; isAdmin?
   const ta = useTranslations("admin");
   const pathname = usePathname();
   const logout = useLogoutAction();
-  const isActive = (href: string, exact: boolean) =>
-    exact ? pathname === href : pathname === href || (pathname.startsWith(href + "/") && !(href === "/dashboard/cards" && pathname === "/dashboard/cards/new"));
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 px-3">
-      {DASHBOARD_NAV.map(({ href, key, icon: Icon, exact }) => {
-        const active = isActive(href, exact);
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-              active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Icon className="size-[18px]" />
-            {t(key)}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3" aria-label={t("label")}>
+      {DASHBOARD_NAV.map(({ group, items }) => (
+        <div key={group} className="grid gap-1 pb-3">
+          <p className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground/80 uppercase">{t(`groups.${group}`)}</p>
+          {items.map(({ href, key, icon: Icon, match }) => {
+            const active = match(pathname);
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
+                  active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Icon className="size-[18px]" />
+                {t(key)}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
       {isAdmin && (
         <>
-          <div className="mx-3 my-3 h-px bg-border" />
+          <div className="mx-3 mb-3 h-px bg-border" />
           <Link
             href="/dashboard/admin"
             onClick={onNavigate}
@@ -114,7 +117,8 @@ function UserMenu({ user }: { user: User }) {
           <span dir="ltr" className="block truncate text-xs font-normal text-muted-foreground">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link href="/dashboard/settings/profile">{t("settings")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link href="/dashboard/settings/profile">{t("profile")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link href="/dashboard/settings/preferences">{t("settings")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link href="/dashboard/help">{t("help")}</Link></DropdownMenuItem>
         {user.role === "ADMIN" && <DropdownMenuItem asChild><Link href="/dashboard/admin"><ShieldCheck /> {ta("nav")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />

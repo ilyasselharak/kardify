@@ -202,8 +202,8 @@ export class CardsService {
 
   private async afterChange(card: BusinessCard) {
     await this.cache.del(publicCardCacheKey(card.slug));
-    // Push updates to Apple / Google Wallet in the background.
-    void this.walletSync.cardChanged(card).catch((e: Error) => this.logger.warn(`Wallet sync failed: ${e.message}`));
+    // Push updates to Apple / Google Wallet in the background, batched across rapid autosaves.
+    this.walletSync.scheduleCardChanged(card.id);
   }
 
   /** Retries with a fresh random suffix on unique-constraint collisions. */

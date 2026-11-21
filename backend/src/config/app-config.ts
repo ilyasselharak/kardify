@@ -40,6 +40,25 @@ export class AppConfig {
   get apiPublicUrl() {
     return this.get('API_PUBLIC_URL', 'http://localhost:4000').replace(/\/$/, '');
   }
+  /**
+   * Origin the API uses to reach the web app itself (PDF rendering). Defaults to FRONTEND_URL;
+   * set it to an internal address (e.g. http://web:3000) when the API and web app share a network.
+   */
+  get frontendInternalUrl() {
+    return this.get('FRONTEND_INTERNAL_URL', this.frontendUrl).replace(/\/$/, '');
+  }
+  /** CV PDF export through headless Chromium (PDF_ENABLED=false turns it off). */
+  get pdfEnabled() {
+    return this.get('PDF_ENABLED', 'true') !== 'false';
+  }
+  /** Optional path to a Chrome/Chromium binary (otherwise Puppeteer's bundled browser is used). */
+  get chromeExecutablePath() {
+    return this.optional('CHROME_EXECUTABLE_PATH');
+  }
+  /** Needed in containers / as root, where Chromium's sandbox cannot start. */
+  get chromeDisableSandbox() {
+    return this.get('CHROME_DISABLE_SANDBOX', 'false') === 'true' || process.getuid?.() === 0;
+  }
   get corsOrigins(): string[] {
     return this.get('CORS_ORIGINS', this.frontendUrl)
       .split(',')

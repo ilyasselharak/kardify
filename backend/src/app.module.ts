@@ -7,6 +7,7 @@ import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CardDesignModule } from './card-design/card-design.module.js';
 import { CardsModule } from './cards/cards.module.js';
+import { CvModule } from './cv/cv.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { AuthGuard } from './common/guards/auth.guard.js';
 import { CsrfGuard } from './common/guards/csrf.guard.js';
@@ -49,6 +50,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AnalyticsModule,
     WalletSyncModule,
     AdminModule,
+    CvModule,
   ],
   controllers: [HealthController],
   providers: [

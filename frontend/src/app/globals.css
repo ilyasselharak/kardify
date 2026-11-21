@@ -60,12 +60,15 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
-  --font-inter: var(--font-card-inter);
-  --font-poppins: var(--font-card-poppins);
-  --font-playfair: var(--font-card-playfair);
-  --font-montserrat: var(--font-card-montserrat);
-  --font-cairo: var(--font-card-cairo);
-  --font-tajawal: var(--font-card-tajawal);
+  --font-inter: var(--font-card-inter), var(--font-ui-arabic), sans-serif;
+  --font-poppins: var(--font-card-poppins), var(--font-ui-arabic), sans-serif;
+  --font-playfair: var(--font-card-playfair), var(--font-ui-arabic), serif;
+  --font-montserrat: var(--font-card-montserrat), var(--font-ui-arabic), sans-serif;
+  --font-cairo: var(--font-card-cairo), sans-serif;
+  --font-tajawal: var(--font-card-tajawal), sans-serif;
+  --font-lora: var(--font-card-lora), var(--font-ui-arabic), serif;
+  --font-spacegrotesk: var(--font-card-spacegrotesk), var(--font-ui-arabic), sans-serif;
+  --font-jetbrains: var(--font-card-jetbrains), var(--font-ui-arabic), monospace;
   --shadow-soft: 0 1px 2px rgb(13 30 55 / 0.04), 0 4px 16px rgb(13 30 55 / 0.06);
   --shadow-lifted: 0 2px 4px rgb(13 30 55 / 0.05), 0 12px 32px rgb(13 30 55 / 0.10);
 }
@@ -108,5 +111,98 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── CV documents ─────────────────────────────────────────────────────
+   Pages are exact A4 boxes (210 × 297 mm). The same markup is printed to PDF by headless
+   Chromium, so screen and PDF output are identical. */
+.cv-root {
+  color: var(--cv-text);
+  font-family: var(--cv-font);
+  line-height: 1.45;
+  font-feature-settings: normal;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.cv-root .cv-heading {
+  font-family: var(--cv-heading-font);
+}
+.cv-root a {
+  color: inherit;
+  text-decoration: none;
+}
+.cv-root .cv-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--cv-accent);
+}
+.cv-root .cv-icon svg {
+  width: 1em;
+  height: 1em;
+}
+.cv-root [data-m="side"] .cv-icon,
+.cv-root .cv-on-accent .cv-icon {
+  color: inherit;
+  opacity: 0.9;
+}
+/* Letter-spacing and upper-casing break Arabic letter joining. */
+.cv-root[dir="rtl"] .cv-track {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.cv-measure-clip {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+}
+.cv-measure {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.cv-page {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  margin-inline: auto;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgb(13 30 55 / 0.08), 0 12px 32px rgb(13 30 55 / 0.10);
+  break-inside: avoid;
+}
+.cv-page:last-child {
+  margin-bottom: 0;
+}
+.cv-flow h1 {
+  font-size: 1.8em !important;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .cv-zoom {
+    zoom: 1 !important;
+  }
+  .cv-page {
+    margin: 0 !important;
+    box-shadow: none !important;
+    break-after: page;
+  }
+  .cv-page:last-child {
+    break-after: auto;
   }
 }

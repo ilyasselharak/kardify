@@ -18,7 +18,7 @@ export function StepPublish({ publicUrl }: { publicUrl?: string }) {
     { ok: (v.socialLinks ?? []).some((l) => l.url), label: t("checkSocial") },
   ];
   return (
-    <div className="grid gap-6">
+    <div className="@container grid gap-6">
       <StepHeading title={t("title")} subtitle={t("subtitle")} />
       <div className="rounded-xl border border-border bg-muted/40 p-4">
         <p className="flex items-center gap-2 text-sm font-medium"><Link2 className="size-4 text-primary" /> {t("publicUrl")}</p>

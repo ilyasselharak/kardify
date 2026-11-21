@@ -21,7 +21,10 @@ The frontend and backend are independent apps. They communicate only through the
 | Auth | Registration with email verification, login with "remember me", logout, forgot/reset password, email change with confirmation, session list and revocation, account deletion, data export |
 | Security | Argon2id hashing, HTTP-only `SameSite=Lax` session cookie (JWT bound to a revocable DB session), CSRF header + origin check, rate limiting, account lockout after 5 failed logins, hashed single-use tokens, magic-byte upload validation with re-encoding, SSRF-safe image fetching, Helmet, strict DTO validation |
 | Cards | Unlimited cards with CRUD, duplicate, publish/unpublish, search, status filter, sort and pagination; non-guessable slugs (`name-xxxxxx`) with collision retry; link regeneration |
-| Designer | 5-step wizard, 8 templates, solid/gradient backgrounds, colors, 6 fonts (including Arabic), font size, corner radius, 4 layouts, photo shape, logo position, social icon style, front and back design, live desktop (flip) and mobile previews. Settings are stored as structured JSON |
+| Card designer | Template library of 16 designs in 8 categories, built on 10 front layouts and 4 back layouts. Customize primary and secondary colors, background (solid, gradient or uploaded image with overlay), patterns, text color, 9 fonts (including Arabic), font size, corner radius, layout, photo shape, logo position, and social and contact icon styles. Three-panel editor (design / live front-back + desktop-mobile preview / details) with autosave, template switching that keeps your information, reset to template defaults, duplicate and preview-before-publish |
+| CV builder | One shared professional profile and up to 30 CV versions, each with its own content, section order and design. Sections: summary, experience, education, skills, projects, certifications, languages, awards, publications, volunteering, interests and references. You can enable or disable, rename and drag-and-drop sections and entries. 8 A4 templates (5 ATS-friendly) with real multi-page pagination, so the preview, public page and PDF are identical. English and Arabic (RTL) CVs. Autosave and field validation |
+| CV sharing | Public, unlisted (noindex) or private per CV; custom slug (`/cv/your-name`); disable a link without deleting it; allow or block PDF downloads; QR code; share buttons. Visibility is enforced by the API on every request (never cached) |
+| PDF export | Server-side headless Chromium (Puppeteer) prints the same A4 pages as the preview, with selectable text, embedded fonts, correct Arabic shaping and clickable links. If it is disabled, the UI falls back to the browser's Print / Save as PDF |
 | Public card | SSR page with SEO/OG metadata, Save Contact (vCard 3.0 with embedded photo), Web Share, WhatsApp, email, SMS, LinkedIn, X, QR (PNG/SVG), Call/Email/WhatsApp/Location quick actions, wallet buttons |
 | QR | Server-generated PNG (up to 2048 px) and SVG, custom colors, optional Kardify or company logo in the center (error-correction H), scan tracking via `?src=qr` |
 | Wallets | Signed Apple PassKit `.pkpass` with the PassKit web service (device registration and APNs push updates). Google Wallet Generic Class/Object via the REST API with a signed "Save to Google Wallet" JWT and automatic object updates |
@@ -77,6 +80,7 @@ Each integration degrades gracefully when it isn't configured. `GET /api/feature
 | Redis | `REDIS_URL` | In-memory cache (single instance only) |
 | Apple Wallet | `APPLE_*` | Button shows "not configured" |
 | Google Wallet | `GOOGLE_WALLET_*` | Button shows "not configured" |
+| CV PDF (Chromium) | `PDF_ENABLED`, `FRONTEND_INTERNAL_URL`, `CHROME_EXECUTABLE_PATH`, `CHROME_DISABLE_SANDBOX` | "Download PDF" opens the browser's Print / Save as PDF |
 
 ---
 
@@ -148,6 +152,7 @@ The public card page is server-rendered. It fetches the card from the API with a
 | `wallet/apple` | `.pkpass` generation, PassKit web service, APNs push |
 | `wallet/google` | Generic Class/Object management, save JWT, sync |
 | `email` | Resend client and localized (EN/AR, RTL-aware) templates |
+| `cv` | CV profile, CV versions (autosave with transactional collection replacement), sharing and privacy, public CV API, PDF rendering (`cv-pdf.service.ts`, headless Chromium with request filtering), short-lived render tokens |
 | `admin` | Admin console API (`AdminGuard`), user and card moderation, platform stats, audit log; `src/scripts/promote-admin.ts` CLI |
 | `common` | Global guards (`AuthGuard`, `CsrfGuard`, throttling), exception filter, utilities |
 
@@ -160,13 +165,18 @@ app/[locale]/(marketing)   landing, about, contact, terms, privacy
 app/[locale]/(auth)        login, register, forgot/reset password, verify email
 app/[locale]/dashboard     overview, cards, cards/new, cards/[id], cards/[id]/edit,
                            analytics, settings/{profile,security,preferences,account}, help
+app/[locale]/dashboard     cv, cv/[id]/edit, cv/[id]/preview, templates
 app/[locale]/card/[slug]   public card page (SSR + metadata)
+app/[locale]/cv/[slug]     public CV page (per-request SSR, robots per visibility)
+app/[locale]/cv-print      internal print route used by the PDF renderer (token-protected)
 components/ui              shadcn/ui-style primitives (Radix + Tailwind v4)
 components/*               feature components (cards, wizard, analytics, settings, ...)
 lib/api                    fetch client + API types
 lib/hooks                  TanStack Query hooks (all server state and mutations)
 lib/validation             Zod schemas (messages are translation keys)
-lib/design                 design types and templates (mirrors the backend contract)
+lib/design                 card design types and templates (mirrors the backend contract)
+lib/cv                     CV types, template registry, A4 pagination, labels (EN/AR), draft & validation
+components/cv/render       CV renderer shared by editor, public page and PDF
 messages/{en,ar}.json      translations
 ```
 
@@ -185,6 +195,13 @@ The Prisma schema is in `backend/prisma/schema.prisma`, and migrations are in `b
 - `EmailVerificationToken`
 - `PasswordResetToken`
 - `EmailChangeToken`
+- `CvProfile` (one per user: shared personal details)
+- `Cv` (a CV version: template, language, design JSON, visibility, per-version name/title/summary)
+- `CvPublicLink` (unique slug, can be disabled)
+- `CvSection` (order, enabled, custom heading)
+- `CvExperience`, `CvEducation`, `CvSkill`, `CvProject`, `CvCertification`, `CvLanguage`, `CvExtraItem` (awards, publications, volunteering, interests, references)
+
+CV templates are rendering code, so they live in a code registry (`frontend/src/lib/cv/templates.ts`) referenced by `Cv.template` rather than in a table.
 
 Every relation cascades from `User` → `BusinessCard` → children, and the frequent query paths are indexed. Tokens are stored only as SHA-256 hashes.
 
@@ -277,6 +294,7 @@ cd frontend && npm run typecheck && npm run lint && npm run build
    - `FRONTEND_URL`, `API_PUBLIC_URL`, `CORS_ORIGINS`
    - `RESEND_API_KEY`, `EMAIL_FROM` (with a verified Resend domain)
    - Cloudinary and wallet credentials as needed
+   - For CV PDFs: the Docker image ships Debian's Chromium. On a Node host (e.g. Render), Puppeteer downloads Chrome during `npm install`. Set `FRONTEND_INTERNAL_URL` if the API can reach the web app on an internal address. Chromium needs roughly 300 MB of RAM while rendering
 
    Swagger is disabled in production unless `SWAGGER_ENABLED=true`.
 3. **Web.** Build `frontend/Dockerfile` with the `NEXT_PUBLIC_APP_URL` and `BACKEND_INTERNAL_URL` **build args**. The rewrite target is fixed at build time. The image uses Next.js `standalone` output (`node server.js`).
@@ -299,8 +317,12 @@ GET    /api/sessions            DELETE /api/sessions/:id            POST /api/se
 GET    /api/cards               POST /api/cards                     GET|PATCH|DELETE /api/cards/:id
 POST   /api/cards/:id/duplicate | publish | unpublish | regenerate-link
 PATCH  /api/cards/:id/qr-settings   GET /api/cards/:id/qr?format=png|svg   GET /api/cards/:id/share
-POST   /api/uploads/images/:purpose            (avatar | profile | logo; multipart "file")
+POST   /api/uploads/images/:purpose            (avatar | profile | logo | background | project; multipart "file")
 GET    /api/card-design/templates
+GET    /api/cv-profile           PATCH /api/cv-profile
+GET    /api/cvs                  POST  /api/cvs                     GET|PATCH|DELETE /api/cvs/:id
+POST   /api/cvs/:id/duplicate    PATCH /api/cvs/:id/sharing        GET /api/cvs/:id/slug-available?slug=
+GET    /api/cvs/:id/pdf          GET /api/public/cvs/:slug         GET /api/public/cvs/:slug/pdf
 GET    /api/public/cards/:slug  GET /api/public/cards/:slug/vcard  GET /api/public/cards/:slug/qr
 POST   /api/public/cards/:slug/analytics
 GET    /api/wallet/apple/:publicId     (+ PassKit web service under /api/wallet/apple/v1/...)

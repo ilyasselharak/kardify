@@ -16,7 +16,7 @@ const TYPES = ["image/jpeg", "image/png", "image/webp"];
 export function ImageUpload({ value, onChange, purpose, label, shape = "circle" }: {
   value: string;
   onChange: (url: string) => void;
-  purpose: "avatar" | "profile" | "logo";
+  purpose: "avatar" | "profile" | "logo" | "background" | "project";
   label: string;
   shape?: "circle" | "square";
 }) {

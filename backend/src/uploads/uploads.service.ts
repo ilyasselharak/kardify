@@ -4,10 +4,17 @@ import sharp from 'sharp';
 import { AppConfig } from '../config/app-config.js';
 import { detectImageType, MAX_UPLOAD_BYTES } from './image-validation.js';
 
-export const UPLOAD_PURPOSES = ['avatar', 'profile', 'logo'] as const;
+export const UPLOAD_PURPOSES = ['avatar', 'profile', 'logo', 'background', 'project'] as const;
 export type UploadPurpose = (typeof UPLOAD_PURPOSES)[number];
 
-const SIZES: Record<UploadPurpose, number> = { avatar: 512, profile: 800, logo: 800 };
+/** Max output box per purpose. Square purposes are cropped; the others keep their aspect ratio. */
+const SIZES: Record<UploadPurpose, { width: number; height: number; fit: 'cover' | 'inside' }> = {
+  avatar: { width: 512, height: 512, fit: 'cover' },
+  profile: { width: 800, height: 800, fit: 'cover' },
+  logo: { width: 800, height: 800, fit: 'inside' },
+  background: { width: 1800, height: 1200, fit: 'inside' },
+  project: { width: 1400, height: 1000, fit: 'inside' },
+};
 
 @Injectable()
 export class UploadsService {
@@ -26,12 +33,12 @@ export class UploadsService {
     }
 
     // Re-encode: strips EXIF/GPS metadata, neutralises polyglot payloads and optimises size.
-    const size = SIZES[purpose];
+    const { width, height, fit } = SIZES[purpose];
     let optimised: Buffer;
     try {
       optimised = await sharp(file.buffer, { limitInputPixels: 40_000_000 })
         .rotate()
-        .resize(size, size, { fit: purpose === 'logo' ? 'inside' : 'cover', withoutEnlargement: true })
+        .resize(width, height, { fit, withoutEnlargement: true })
         .webp({ quality: 86 })
         .toBuffer();
     } catch {

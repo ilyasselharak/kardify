@@ -100,3 +100,30 @@ describe('GoogleWalletService.buildObject', () => {
     expect(obj.logo.sourceUri.uri).toBe('https://kardify.com/brand/kardify-mark.png');
   });
 });
+
+describe('WalletSyncService debounce', () => {
+  it('coalesces rapid card edits (editor autosave) into one wallet sync', async () => {
+    const { WalletSyncService, WALLET_SYNC_DEBOUNCE_MS } = await import('./wallet-sync.service.js');
+    vi.useFakeTimers();
+    try {
+      const prisma = {
+        businessCard: { findUnique: vi.fn().mockResolvedValue({ id: 'c1' }) },
+        walletPass: { findMany: vi.fn().mockResolvedValue([]) },
+      };
+      const svc = new WalletSyncService(prisma as never, {} as never, {} as never);
+      for (let i = 0; i < 5; i++) svc.scheduleCardChanged('c1');
+      await vi.advanceTimersByTimeAsync(WALLET_SYNC_DEBOUNCE_MS - 1);
+      expect(prisma.businessCard.findUnique).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(2);
+      expect(prisma.businessCard.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.walletPass.findMany).toHaveBeenCalledTimes(1);
+
+      svc.scheduleCardChanged('c1');
+      svc.cancelScheduled('c1');
+      await vi.advanceTimersByTimeAsync(WALLET_SYNC_DEBOUNCE_MS * 2);
+      expect(prisma.businessCard.findUnique).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

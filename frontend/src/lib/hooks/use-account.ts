@@ -74,10 +74,12 @@ export function useRevokeOtherSessions() {
 
 export function useUploadImage() {
   return useMutation({
-    mutationFn: ({ file, purpose }: { file: File; purpose: "avatar" | "profile" | "logo" }) => {
+    mutationFn: ({ file, purpose }: { file: File; purpose: UploadPurpose }) => {
       const form = new FormData();
       form.append("file", file);
       return api.post<{ url: string }>(`/uploads/images/${purpose}`, form);
     },
   });
 }
+
+export type UploadPurpose = "avatar" | "profile" | "logo" | "background" | "project";

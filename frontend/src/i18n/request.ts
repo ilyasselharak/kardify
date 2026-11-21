@@ -9,5 +9,7 @@ export default getRequestConfig(async ({ locale }) => {
   return {
     locale: resolved,
     messages: (await import(`../../messages/${resolved}.json`)).default,
+    // Fixed zone so server and browser format dates identically (no hydration mismatch).
+    timeZone: "UTC",
   };
 });

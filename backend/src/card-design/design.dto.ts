@@ -1,8 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsHexColor, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsHexColor, IsIn, IsInt, IsOptional, IsString, IsUrl, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import {
+  BACK_LAYOUTS,
   BACKGROUND_TYPES,
+  CONTACT_ICON_STYLES,
+  PATTERNS,
   FONT_FAMILIES,
   FONT_SIZES,
   LAYOUTS,
@@ -22,6 +25,7 @@ class FaceDesignDto {
 }
 
 export class BackDesignDto extends FaceDesignDto {
+  @IsOptional() @IsIn(BACK_LAYOUTS) layout?: (typeof BACK_LAYOUTS)[number];
   @IsOptional() @IsBoolean() showQr?: boolean;
   @IsOptional() @IsString() @MaxLength(120) tagline?: string;
 }
@@ -30,6 +34,12 @@ export class BackDesignDto extends FaceDesignDto {
 export class DesignSettingsDto extends FaceDesignDto {
   @ApiPropertyOptional({ enum: TEMPLATE_IDS }) @IsOptional() @IsIn(TEMPLATE_IDS) template?: (typeof TEMPLATE_IDS)[number];
   @IsOptional() @IsHexColor() primaryColor?: string;
+  @IsOptional() @IsHexColor() secondaryColor?: string;
+  @IsOptional() @IsIn(CONTACT_ICON_STYLES) contactIconStyle?: (typeof CONTACT_ICON_STYLES)[number];
+  @IsOptional() @IsIn(PATTERNS) pattern?: (typeof PATTERNS)[number];
+  /** '' clears the image; otherwise an https URL (uploads are re-encoded and hosted on Cloudinary). */
+  @IsOptional() @ValidateIf((_, v) => v !== '') @IsUrl({ protocols: ['https'], require_protocol: true }) @MaxLength(1000) backgroundImage?: string;
+  @IsOptional() @IsInt() @Min(0) @Max(90) backgroundOverlay?: number;
   @IsOptional() @IsIn(FONT_FAMILIES) fontFamily?: (typeof FONT_FAMILIES)[number];
   @IsOptional() @IsIn(FONT_SIZES) fontSize?: (typeof FONT_SIZES)[number];
   @IsOptional() @IsInt() @Min(0) @Max(40) borderRadius?: number;

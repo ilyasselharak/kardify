@@ -63,7 +63,10 @@
     "phoneInvalid": "Enter a valid phone number, e.g. +212 600 000 000",
     "colorInvalid": "Enter a valid hex color, e.g. #006afe",
     "fileTooLarge": "The file must be smaller than 5 MB",
-    "fileType": "Only JPEG, PNG or WebP images are allowed"
+    "fileType": "Only JPEG, PNG or WebP images are allowed",
+    "dateInvalid": "Choose a month and a year",
+    "dateOrder": "End date must be after the start date",
+    "tooMany": "Too many items"
   },
   "errors": {
     "NETWORK_ERROR": "Can't reach the server. Check your connection and try again.",
@@ -89,7 +92,16 @@
     "FORBIDDEN": "You don't have permission to do that.",
     "CANNOT_MODIFY_SELF": "You can't perform this action on your own account.",
     "LAST_ADMIN": "At least one active administrator is required.",
-    "USER_NOT_FOUND": "This user could not be found."
+    "USER_NOT_FOUND": "This user could not be found.",
+    "CV_NOT_FOUND": "CV not found.",
+    "CV_LIMIT": "You've reached the maximum number of CVs (30).",
+    "CV_SLUG_TAKEN": "This link is already taken.",
+    "CV_SLUG_INVALID": "Use 3–60 lowercase letters, numbers or hyphens.",
+    "CV_DATE_RANGE": "A start date is after its end date.",
+    "CV_DOWNLOAD_DISABLED": "The owner has disabled PDF downloads.",
+    "PDF_DISABLED": "PDF export isn't available on this server — use Print instead.",
+    "PDF_FAILED": "We couldn't generate the PDF. Please try again.",
+    "INVALID_PURPOSE": "Invalid upload type."
   },
   "auth": {
     "brandPanel": {
@@ -319,25 +331,36 @@
   "dashboard": {
     "nav": {
       "overview": "Overview",
-      "cards": "My Cards",
+      "cards": "My business cards",
       "create": "Create New Card",
       "analytics": "Analytics",
       "settings": "Account Settings",
       "help": "Help & Support",
-      "logout": "Logout"
+      "logout": "Logout",
+      "label": "Dashboard",
+      "groups": {
+        "main": "Main",
+        "account": "Account"
+      },
+      "cv": "My CV / Resume",
+      "templates": "Templates",
+      "profile": "My profile",
+      "security": "Security"
     },
     "verifyBanner": "Please verify your email to unlock all features.",
     "greeting": "Welcome back, {name}",
-    "overviewSubtitle": "Here's how your digital business cards are performing.",
+    "overviewSubtitle": "Here's an overview of your business cards and CVs.",
     "stats": {
       "totalCards": "Total cards",
-      "activeCards": "Active cards",
+      "activeCards": "Published cards",
       "views": "Card views",
       "shares": "Shares",
       "scans": "QR scans",
       "appleWallet": "Apple Wallet adds",
       "googleWallet": "Google Wallet adds",
-      "uniqueVisitors": "Unique visitors"
+      "uniqueVisitors": "Unique visitors",
+      "totalCvs": "Total CVs",
+      "publicCvs": "Public CVs"
     },
     "last30": "Last 30 days",
     "recentActivity": "Recent activity",
@@ -351,11 +374,18 @@
       "analytics": "View analytics",
       "analyticsBody": "Track engagement",
       "profile": "Edit profile",
-      "profileBody": "Update your account"
+      "profileBody": "Update your account",
+      "createCv": "Create a CV",
+      "createCvBody": "Build a professional A4 CV",
+      "templates": "Browse templates",
+      "templatesBody": "16 card and 8 CV designs"
     },
     "viewsOverTime": "Views over time",
     "topCards": "Most popular cards",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "recentCvs": "Recent CV updates",
+    "noCvs": "You haven't created a CV yet.",
+    "cvUpdated": "Updated {when}"
   },
   "cards": {
     "title": "My Cards",
@@ -526,7 +556,15 @@
         "creative": "Creative",
         "elegant": "Elegant",
         "dark": "Dark",
-        "gradient": "Gradient"
+        "gradient": "Gradient",
+        "clean": "Clean",
+        "diagonal": "Diagonal",
+        "luxe": "Luxe",
+        "aurora": "Aurora",
+        "noir": "Noir",
+        "tech": "Tech",
+        "startup": "Startup",
+        "executive": "Executive"
       },
       "fonts": {
         "inter": "Inter",
@@ -534,7 +572,10 @@
         "playfair": "Playfair Display",
         "montserrat": "Montserrat",
         "cairo": "Cairo (Arabic)",
-        "tajawal": "Tajawal (Arabic)"
+        "tajawal": "Tajawal (Arabic)",
+        "lora": "Lora",
+        "spacegrotesk": "Space Grotesk",
+        "jetbrains": "JetBrains Mono"
       },
       "sizes": {
         "sm": "Small",
@@ -545,7 +586,13 @@
         "centered": "Centered",
         "left": "Aligned",
         "split": "Split",
-        "banner": "Banner"
+        "banner": "Banner",
+        "diagonal": "Diagonal",
+        "frame": "Frame",
+        "editorial": "Editorial",
+        "sidebar": "Sidebar",
+        "monogram": "Monogram",
+        "orbit": "Orbit"
       },
       "shapes": {
         "circle": "Circle",
@@ -918,5 +965,514 @@
       "card_deactivate": "Deactivated card",
       "card_delete": "Deleted card"
     }
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Premium designs for your business cards and CVs. Your details carry over when you switch.",
+    "categoriesLabel": "Template categories",
+    "categories": {
+      "all": "All",
+      "minimal": "Minimal & Clean",
+      "corporate": "Corporate & Professional",
+      "creative": "Modern & Creative",
+      "elegant": "Elegant & Luxury",
+      "gradient": "Gradient & Colorful",
+      "dark": "Dark & Premium",
+      "tech": "Technology & Startup",
+      "classic": "Classic Business"
+    },
+    "cardNames": {
+      "classic": "Classic",
+      "modern": "Modern",
+      "minimal": "Minimal",
+      "corporate": "Corporate",
+      "creative": "Creative",
+      "elegant": "Elegant",
+      "dark": "Dark",
+      "gradient": "Gradient",
+      "clean": "Clean",
+      "diagonal": "Diagonal",
+      "luxe": "Luxe",
+      "aurora": "Aurora",
+      "noir": "Noir",
+      "tech": "Tech",
+      "startup": "Startup",
+      "executive": "Executive"
+    },
+    "cvNames": {
+      "modern": "Modern Professional",
+      "minimal": "Minimal",
+      "corporate": "Corporate",
+      "creative": "Creative",
+      "executive": "Executive",
+      "technical": "Technical / Developer",
+      "academic": "Academic",
+      "elegant": "Elegant"
+    },
+    "cvDescriptions": {
+      "modern": "Two columns with a bold sidebar for contact details and skills.",
+      "minimal": "Quiet, single-column layout with generous white space. ATS-friendly.",
+      "corporate": "Strong header band and clear section markers. ATS-friendly.",
+      "creative": "Timeline experience, large name and a tinted sidebar.",
+      "executive": "Centred serif header with refined rules for senior roles. ATS-friendly.",
+      "technical": "Skills and projects first, links up front. Built for developers. ATS-friendly.",
+      "academic": "Dates in a side column, education and publications first. ATS-friendly.",
+      "elegant": "Centred name, fine accents and a soft sidebar."
+    },
+    "cardsTab": "Business cards ({count})",
+    "cvTab": "CV templates ({count})",
+    "cvIntro": "Every template is A4, supports multiple pages, Arabic (right-to-left) and PDF export.",
+    "useTemplate": "Use template",
+    "flip": "Flip card",
+    "sampleTitle": "Product Designer"
+  },
+  "editor": {
+    "templates": "Templates",
+    "secondaryColor": "Secondary colour",
+    "backgroundImage": "Background image",
+    "overlay": "Colour overlay",
+    "pattern": "Pattern",
+    "patterns": {
+      "none": "None",
+      "dots": "Dots",
+      "grid": "Grid",
+      "lines": "Lines",
+      "waves": "Waves",
+      "circles": "Rings"
+    },
+    "icons": "Icons",
+    "contactIcons": "Contact icons",
+    "contactIconStyles": {
+      "plain": "Plain",
+      "circle": "Circle",
+      "none": "Hidden"
+    },
+    "backLayout": "Back layout",
+    "backLayouts": {
+      "qr-center": "QR centred",
+      "qr-side": "QR beside logo",
+      "logo": "Logo focus",
+      "contact": "Contact details"
+    },
+    "save": {
+      "saved": "All changes saved",
+      "dirty": "Unsaved changes",
+      "saving": "Saving…",
+      "invalid": "Fix highlighted fields to save",
+      "error": "Couldn't save",
+      "retry": "Retry"
+    },
+    "fixErrors": "Some fields need attention before this can be saved.",
+    "openCopy": "Open copy",
+    "resetDone": "Design reset to template defaults",
+    "back": "Back",
+    "reset": "Reset design",
+    "duplicate": "Duplicate",
+    "preview": "Preview",
+    "viewLive": "View live",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "designPanel": "Design",
+    "detailsPanel": "Details",
+    "previewPanel": "Live preview",
+    "tabs": {
+      "info": "Info",
+      "contact": "Contact",
+      "social": "Social",
+      "publish": "Publish"
+    },
+    "previewTitle": "Preview",
+    "previewLive": "This is what visitors see on your public card page.",
+    "previewDraft": "This is how your card page will look once published.",
+    "resetTitle": "Reset to template defaults?",
+    "resetBody": "Colours, fonts and layout go back to the template's original look. Your information is kept.",
+    "cancel": "Cancel",
+    "new": {
+      "title": "Create a business card",
+      "subtitle": "Pick a template and add your name — you can customise everything in the editor.",
+      "details": "Your details",
+      "chooseTemplate": "Choose a template",
+      "chooseTemplateHint": "Shown with your details. You can switch any time without losing information.",
+      "preview": "Preview",
+      "front": "Front",
+      "back": "Back",
+      "create": "Create card",
+      "createHint": "Opens the editor. Your card stays a private draft until you publish it."
+    }
+  },
+  "cv": {
+    "title": "My CV / Resume",
+    "subtitle": "Keep your professional profile in one place and generate tailored CVs to share anywhere.",
+    "create": "Create new CV",
+    "pdfGenerating": "Generating PDF…",
+    "pdfReady": "PDF downloaded",
+    "printInstead": "Print instead",
+    "toasts": {
+      "duplicated": "CV duplicated",
+      "deleted": "CV deleted",
+      "renamed": "CV renamed"
+    },
+    "deleteTitle": "Delete this CV?",
+    "deleteBody": "“{title}” and its public link will be permanently deleted. Your shared profile is kept.",
+    "createDialog": {
+      "title": "Create a new CV",
+      "subtitle": "Your personal details are shared by all your CVs, so you only enter them once.",
+      "name": "CV name",
+      "nameHint": "Only you see this, e.g. “Frontend Developer CV”.",
+      "defaultTitle": "My CV",
+      "language": "CV language",
+      "startFrom": "Start from",
+      "startFromHint": "Copy content from an existing CV and tailor it.",
+      "blank": "Blank CV (shared profile only)",
+      "copyOf": "Copy of “{title}”",
+      "template": "Template",
+      "submit": "Create CV"
+    },
+    "visibility": {
+      "PRIVATE": "Private",
+      "UNLISTED": "Unlisted",
+      "PUBLIC": "Public",
+      "linkOff": "Link off"
+    },
+    "stats": {
+      "completion": "Profile completion",
+      "completeDone": "Your profile is complete.",
+      "completeHint": "Add a summary, experience, education and skills to reach 100%.",
+      "total": "CV versions",
+      "public": "Public CVs",
+      "lastUpdated": "Last updated"
+    },
+    "emptyTitle": "Create your first CV",
+    "emptyBody": "Choose from 8 professional A4 templates, fill in your profile once and share a link or a PDF.",
+    "emptyCta": "Create a CV",
+    "latest": "Most recent",
+    "updated": "Updated {when}",
+    "counts": {
+      "experiences": "Experience",
+      "educations": "Education",
+      "skills": "Skills",
+      "projects": "Projects",
+      "languages": "Languages"
+    },
+    "actions": {
+      "edit": "Edit CV",
+      "preview": "Preview",
+      "download": "Download PDF",
+      "share": "Share",
+      "menu": "CV actions",
+      "rename": "Rename",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
+    },
+    "allCvs": "All CVs ({count})"
+  },
+  "cvEditor": {
+    "pageTitle": "Edit CV",
+    "back": "Back to CVs",
+    "cvTitle": "CV name",
+    "preview": {
+      "a4": "A4",
+      "mobile": "Mobile",
+      "pages": "{count, plural, one {# page} other {# pages}}",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "fit": "Fit to width"
+    },
+    "downloadPdf": "Download PDF",
+    "share": "Share",
+    "more": "More actions",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "fixErrors": "Some fields need attention — they're highlighted in red.",
+    "visibility": {
+      "PRIVATE": "Private",
+      "UNLISTED": "Unlisted",
+      "PUBLIC": "Public"
+    },
+    "panels": {
+      "content": "Content",
+      "preview": "Preview",
+      "design": "Design"
+    },
+    "dragToReorder": "Drag to reorder",
+    "untitled": "Untitled",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "removeItem": "Remove",
+    "month": "Month",
+    "year": "Year",
+    "sharedNote": "Personal details are shared by all your CVs — update them once and every version stays in sync.",
+    "personal": "Personal information",
+    "personalHint": "Name, photo, contact details and links",
+    "sectionsTitle": "Sections — drag to reorder",
+    "sections": {
+      "summary": "Professional summary",
+      "experience": "Work experience",
+      "education": "Education",
+      "skills": "Skills",
+      "projects": "Projects",
+      "certifications": "Certifications",
+      "languages": "Languages",
+      "awards": "Awards",
+      "publications": "Publications",
+      "volunteer": "Volunteer experience",
+      "interests": "Interests",
+      "references": "References"
+    },
+    "hasErrors": "Has errors",
+    "showSection": "Show “{name}” on the CV",
+    "sectionHidden": "This section is hidden. Its content is kept but not shown on the CV, public page or PDF.",
+    "sectionHeading": "Section heading",
+    "add": {
+      "experience": "Add experience",
+      "education": "Add education",
+      "skills": "Add skill",
+      "projects": "Add project",
+      "certifications": "Add certification",
+      "languages": "Add language",
+      "award": "Add award",
+      "publication": "Add publication",
+      "volunteer": "Add volunteer experience",
+      "interest": "Add interest",
+      "reference": "Add reference"
+    },
+    "emptySkills": "Type a skill and press Enter. Separate several with commas.",
+    "fields": {
+      "photo": "Profile photo",
+      "fullName": "Full name",
+      "professionalTitle": "Professional title",
+      "headlineOverride": "Title for this CV",
+      "headlineHint": "Overrides your professional title on this version only.",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "website": "Website",
+      "portfolio": "Portfolio",
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "summary": "Professional summary",
+      "summaryHint": "Shared by all CVs. 3–5 sentences about who you are and what you do best.",
+      "customSummary": "Use a different summary for this CV",
+      "cvSummary": "Summary for this CV",
+      "objectives": "Career objectives",
+      "achievements": "Key achievements",
+      "bulletsHint": "One point per line. Start a line with “-” for a bullet.",
+      "jobTitle": "Job title",
+      "company": "Company",
+      "location": "Location",
+      "employmentType": "Employment type",
+      "employment": {
+        "full-time": "Full-time",
+        "part-time": "Part-time",
+        "contract": "Contract",
+        "freelance": "Freelance",
+        "internship": "Internship",
+        "temporary": "Temporary",
+        "volunteer": "Volunteer"
+      },
+      "startDate": "Start date",
+      "endDate": "End date",
+      "currentlyWorking": "I currently work here",
+      "responsibilities": "Responsibilities",
+      "achievementsList": "Achievements",
+      "degree": "Degree",
+      "institution": "Institution",
+      "grade": "Grade",
+      "description": "Description",
+      "skillPlaceholder": "e.g. React, Project management",
+      "skillName": "Skill",
+      "skillCategory": "Category",
+      "skillCategories": {
+        "TECHNICAL": "Technical skills",
+        "SOFT": "Soft skills",
+        "LANGUAGE": "Languages",
+        "TOOL": "Tools & technologies"
+      },
+      "level": "Level",
+      "noLevel": "No level",
+      "levels": {
+        "1": "1 · Beginner",
+        "2": "2 · Elementary",
+        "3": "3 · Intermediate",
+        "4": "4 · Advanced",
+        "5": "5 · Expert"
+      },
+      "projectName": "Project name",
+      "technologies": "Technologies used",
+      "projectUrl": "Project URL",
+      "githubUrl": "GitHub URL",
+      "projectImage": "Project image",
+      "certName": "Certificate name",
+      "issuer": "Issuing organisation",
+      "issueDate": "Issue date",
+      "expirationDate": "Expiration date",
+      "credentialUrl": "Credential URL",
+      "language": "Language",
+      "proficiency": "Proficiency",
+      "proficiencyLevels": {
+        "native": "Native",
+        "fluent": "Fluent",
+        "advanced": "Advanced",
+        "intermediate": "Intermediate",
+        "basic": "Basic"
+      },
+      "interest": "Interest",
+      "interestPlaceholder": "e.g. Photography, Chess",
+      "date": "Date",
+      "url": "Link",
+      "extra": {
+        "award": {
+          "title": "Award",
+          "subtitle": "Awarded by",
+          "description": "Description"
+        },
+        "publication": {
+          "title": "Title",
+          "subtitle": "Publisher / journal",
+          "description": "Summary or citation"
+        },
+        "volunteer": {
+          "title": "Role",
+          "subtitle": "Organisation",
+          "description": "What you did"
+        },
+        "reference": {
+          "title": "Name",
+          "subtitle": "Position & company",
+          "description": "Contact details"
+        }
+      },
+      "nameOverride": "Name on this CV",
+      "nameOverrideHint": "Only for this version, e.g. your name written in Arabic."
+    },
+    "design": {
+      "template": "Template",
+      "atsHint": "ATS templates use a single column and standard headings so applicant tracking systems read them correctly.",
+      "language": "CV language",
+      "languageHint": "Headings, dates and layout direction follow this language. Arabic CVs are laid out right-to-left.",
+      "colors": "Colours",
+      "accent": "Accent",
+      "text": "Text",
+      "typography": "Typography",
+      "bodyFont": "Body font",
+      "headingFont": "Heading font",
+      "fontSize": "Text size",
+      "sizes": {
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large"
+      },
+      "layout": "Page & layout",
+      "spacing": "Spacing",
+      "spacings": {
+        "compact": "Compact",
+        "normal": "Normal",
+        "relaxed": "Relaxed"
+      },
+      "margins": "Page margins",
+      "marginOptions": {
+        "narrow": "Narrow",
+        "normal": "Normal",
+        "wide": "Wide"
+      },
+      "skillStyle": "Skills style",
+      "skillStyles": {
+        "tags": "Tags",
+        "bars": "Levels",
+        "list": "List"
+      },
+      "dateFormat": "Dates",
+      "dateFormats": {
+        "short": "Jan 2024",
+        "numeric": "01/2024",
+        "year": "2024"
+      },
+      "showPhoto": "Show photo",
+      "showIcons": "Show contact icons",
+      "pageHint": "A4 · 210 × 297 mm. Content flows onto new pages automatically — nothing is ever cut off."
+    },
+    "previewCv": "Preview"
+  },
+  "cvShare": {
+    "title": "Share your CV",
+    "subtitle": "Choose who can open it. Changes apply immediately.",
+    "visibility": "Visibility",
+    "visibilities": {
+      "PRIVATE": {
+        "label": "Private",
+        "body": "Only you can see it. The public link doesn't work."
+      },
+      "UNLISTED": {
+        "label": "Unlisted",
+        "body": "Anyone with the link can view it. Hidden from search engines."
+      },
+      "PUBLIC": {
+        "label": "Public",
+        "body": "Anyone with the link can view it, and search engines may index it."
+      }
+    },
+    "saved": "Sharing settings saved",
+    "linkActive": "Public link",
+    "linkActiveHint": "Turn off to disable the link without changing anything else.",
+    "linkOn": "Link enabled",
+    "linkOff": "Link disabled",
+    "publicUrl": "Public URL",
+    "copy": "Copy link",
+    "open": "Open public page",
+    "customLink": "Custom link",
+    "saveLink": "Save",
+    "slugSaved": "Link updated — the old link no longer works",
+    "slugStates": {
+      "idle": "3–60 lowercase letters, numbers or hyphens.",
+      "checking": "Checking availability…",
+      "ok": "Available",
+      "taken": "Already taken — try another",
+      "invalid": "Use 3–60 lowercase letters, numbers or hyphens."
+    },
+    "qrAlt": "QR code for your CV link",
+    "downloadQr": "Download QR",
+    "share": "Share…",
+    "nativeUnsupported": "Sharing isn't supported here — copy the link instead.",
+    "email": "Email",
+    "linkDisabledNote": "Visitors currently can't open this link. Make the CV unlisted or public and turn the link on.",
+    "allowDownload": "Allow PDF download",
+    "allowDownloadHint": "Show a “Download PDF” button on your public CV.",
+    "previewPublic": "Preview public page"
+  },
+  "cvPublic": {
+    "email": "Email",
+    "call": "Call",
+    "portfolio": "Portfolio",
+    "website": "Website",
+    "downloadPdf": "Download PDF",
+    "share": "Share",
+    "qr": "QR code",
+    "contactLabel": "Contact",
+    "madeWith": "Made with Kardify.",
+    "createYours": "Create your free CV",
+    "shareTitle": "Share this CV",
+    "shareBody": "Send the link or share it on your favourite apps.",
+    "link": "CV link",
+    "copy": "Copy",
+    "nativeUnsupported": "Sharing isn't supported here — copy the link instead.",
+    "print": "Print / Save as PDF",
+    "qrTitle": "Scan to open this CV",
+    "qrBody": "Point a phone camera at the code.",
+    "downloadQr": "Download QR",
+    "notFoundTitle": "CV not available",
+    "notFoundBody": "This CV doesn't exist, is private, or its link has been disabled.",
+    "home": "Go to Kardify"
+  },
+  "cvPreview": {
+    "title": "Preview",
+    "status": {
+      "PRIVATE": "Private — only you can see this",
+      "UNLISTED": "Unlisted — visible to anyone with the link",
+      "PUBLIC": "Public — visible to everyone"
+    },
+    "edit": "Edit",
+    "publish": "Share & publish"
   }
 }

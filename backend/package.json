@@ -51,6 +51,7 @@
     "multer": "^2.5.0",
     "passkit-generator": "^3.7.0",
     "pg": "^8.23.1",
+    "puppeteer": "^24.43.1",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.37.0",
@@ -87,7 +88,8 @@
     "argon2@0.45.2": true,
     "@prisma/engines@7.10.1": true,
     "prisma@7.10.1": true,
-    "@scarf/scarf": false
+    "@scarf/scarf": false,
+    "puppeteer@24.43.1": true
   },
   "engines": {
     "node": ">=20.9"

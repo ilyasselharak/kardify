@@ -74,7 +74,7 @@ export function useCardActionHandlers(card: BusinessCard) {
   };
 }
 
-export function CardActionsMenu({ card, align = "end" }: { card: BusinessCard; align?: "start" | "end" }) {
+export function CardActionsMenu({ card, align = "end", onDeleted, hideEdit }: { card: BusinessCard; align?: "start" | "end"; onDeleted?: () => void; hideEdit?: boolean }) {
   const t = useTranslations("cards");
   const tc = useTranslations("common");
   const a = useCardActionHandlers(card);
@@ -93,7 +93,7 @@ export function CardActionsMenu({ card, align = "end" }: { card: BusinessCard; a
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} className="w-56">
           <DropdownMenuItem onSelect={() => a.router.push(`/dashboard/cards/${card.id}`)}><Eye /> {t("actions.view")}</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => a.router.push(`/dashboard/cards/${card.id}/edit`)}><Pencil /> {t("actions.edit")}</DropdownMenuItem>
+          {!hideEdit && <DropdownMenuItem onSelect={() => a.router.push(`/dashboard/cards/${card.id}/edit`)}><Pencil /> {t("actions.edit")}</DropdownMenuItem>}
           <DropdownMenuItem onSelect={a.duplicate}><Copy /> {t("actions.duplicate")}</DropdownMenuItem>
           <DropdownMenuItem onSelect={a.requirePublished(() => setShareOpen(true))}><Share2 /> {t("actions.share")}</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setQrOpen(true)}><Download /> {t("actions.downloadQr")}</DropdownMenuItem>
@@ -130,7 +130,7 @@ export function CardActionsMenu({ card, align = "end" }: { card: BusinessCard; a
         />
       )}
       <QrDialog card={card} open={qrOpen} onOpenChange={setQrOpen} />
-      <DeleteCardDialog card={card} open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={() => a.remove()} cancelLabel={tc("cancel")} />
+      <DeleteCardDialog card={card} open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={() => a.remove(onDeleted)} cancelLabel={tc("cancel")} />
     </>
   );
 }

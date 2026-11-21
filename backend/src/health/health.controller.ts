@@ -29,6 +29,7 @@ export class HealthController {
       googleWallet: !!this.config.google,
       uploads: !!this.config.cloudinary,
       email: !!this.config.resendApiKey,
+      cvPdf: this.config.pdfEnabled,
     };
   }
 }

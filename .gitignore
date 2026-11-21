@@ -16,3 +16,6 @@ node_modules/
 dist/
 .next/
 coverage/
+
+# Local live-server runtime files (logs, pids, tunnel URL)
+.run/

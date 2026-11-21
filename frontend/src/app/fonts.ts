@@ -1,4 +1,4 @@
-import { Cairo, IBM_Plex_Sans_Arabic, Inter, Montserrat, Playfair_Display, Poppins, Tajawal } from "next/font/google";
+import { Cairo, IBM_Plex_Sans_Arabic, Inter, JetBrains_Mono, Lora, Montserrat, Playfair_Display, Poppins, Space_Grotesk, Tajawal } from "next/font/google";
 
 /** UI fonts: Inter (Latin) + IBM Plex Sans Arabic for Arabic glyphs. */
 export const uiLatin = Inter({ subsets: ["latin"], variable: "--font-card-inter", display: "swap" });
@@ -16,4 +16,10 @@ export const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-car
 export const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-card-cairo", display: "swap" });
 export const tajawal = Tajawal({ subsets: ["arabic", "latin"], weight: ["400", "500", "700"], variable: "--font-card-tajawal", display: "swap" });
 
-export const fontVariables = [uiLatin, uiArabic, poppins, playfair, montserrat, cairo, tajawal].map((f) => f.variable).join(" ");
+export const lora = Lora({ subsets: ["latin"], variable: "--font-card-lora", display: "swap" });
+export const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-card-spacegrotesk", display: "swap" });
+export const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-card-jetbrains", display: "swap" });
+
+export const fontVariables = [uiLatin, uiArabic, poppins, playfair, montserrat, cairo, tajawal, lora, spaceGrotesk, jetbrains]
+  .map((f) => f.variable)
+  .join(" ");

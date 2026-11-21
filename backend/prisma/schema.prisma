@@ -79,6 +79,8 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   emailChangeTokens       EmailChangeToken[]
   adminAuditLogs          AdminAuditLog[]
+  cvProfile               CvProfile?
+  cvs                     Cv[]
 
   @@index([role])
   @@index([createdAt])
@@ -255,4 +257,255 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([targetType, targetId])
   @@map("admin_audit_logs")
+}
+
+// ─────────────────────────────── CV / Resume builder ───────────────────────────────
+
+enum CvVisibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum CvSectionKey {
+  summary
+  experience
+  education
+  skills
+  projects
+  certifications
+  languages
+  awards
+  publications
+  volunteer
+  interests
+  references
+}
+
+enum CvSkillCategory {
+  TECHNICAL
+  SOFT
+  LANGUAGE
+  TOOL
+}
+
+enum CvExtraKind {
+  AWARD
+  PUBLICATION
+  VOLUNTEER
+  INTEREST
+  REFERENCE
+}
+
+/// Personal details shared by all of a user's CVs (entered once).
+model CvProfile {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @db.Uuid
+  fullName          String   @default("") @db.VarChar(120)
+  professionalTitle String   @default("") @db.VarChar(120)
+  photo             String?  @db.VarChar(1000)
+  email             String?  @db.VarChar(254)
+  phone             String?  @db.VarChar(40)
+  address           String?  @db.VarChar(200)
+  city              String?  @db.VarChar(100)
+  country           String?  @db.VarChar(100)
+  website           String?  @db.VarChar(500)
+  linkedin          String?  @db.VarChar(500)
+  github            String?  @db.VarChar(500)
+  portfolio         String?  @db.VarChar(500)
+  summary           String   @default("") @db.VarChar(2000)
+  objectives        String   @default("") @db.VarChar(1000)
+  achievements      String   @default("") @db.VarChar(2000)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("cv_profiles")
+}
+
+/// One CV version. Personal details come from CvProfile; everything else is per version.
+model Cv {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String       @db.Uuid
+  title         String       @db.VarChar(120)
+  /// Code-defined template id (see the CV template registry).
+  template      String       @default("modern") @db.VarChar(40)
+  language      Language     @default(en)
+  /// Optional per-version overrides of the shared profile (e.g. the name written in Arabic).
+  fullName      String?      @db.VarChar(120)
+  headline      String?      @db.VarChar(120)
+  summary       String?      @db.VarChar(2000)
+  /// Fonts, colours, spacing and page settings.
+  design        Json         @default("{}")
+  visibility    CvVisibility @default(PRIVATE)
+  allowDownload Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicLink     CvPublicLink?
+  sections       CvSection[]
+  experiences    CvExperience[]
+  educations     CvEducation[]
+  skills         CvSkill[]
+  projects       CvProject[]
+  certifications CvCertification[]
+  languages      CvLanguage[]
+  extras         CvExtraItem[]
+
+  @@index([userId, updatedAt])
+  @@index([userId, visibility])
+  @@map("cvs")
+}
+
+/// Public URL of a CV. Disabled links return 404 without deleting the slug.
+model CvPublicLink {
+  id        String   @id @default(uuid()) @db.Uuid
+  cvId      String   @unique @db.Uuid
+  slug      String   @unique @db.VarChar(80)
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@map("cv_public_links")
+}
+
+/// Section order, visibility and optional custom heading per CV.
+model CvSection {
+  id       String       @id @default(uuid()) @db.Uuid
+  cvId     String       @db.Uuid
+  key      CvSectionKey
+  enabled  Boolean      @default(true)
+  position Int
+  title    String?      @db.VarChar(60)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@unique([cvId, key])
+  @@index([cvId, position])
+  @@map("cv_sections")
+}
+
+model CvExperience {
+  id               String  @id @default(uuid()) @db.Uuid
+  cvId             String  @db.Uuid
+  position         Int
+  jobTitle         String  @db.VarChar(120)
+  company          String  @db.VarChar(120)
+  location         String? @db.VarChar(120)
+  employmentType   String? @db.VarChar(20)
+  /// Month precision, stored as YYYY-MM.
+  startDate        String? @db.VarChar(7)
+  endDate          String? @db.VarChar(7)
+  current          Boolean @default(false)
+  responsibilities String  @default("") @db.VarChar(3000)
+  achievements     String  @default("") @db.VarChar(2000)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_experiences")
+}
+
+model CvEducation {
+  id          String  @id @default(uuid()) @db.Uuid
+  cvId        String  @db.Uuid
+  position    Int
+  degree      String  @db.VarChar(160)
+  institution String  @db.VarChar(160)
+  location    String? @db.VarChar(120)
+  startDate   String? @db.VarChar(7)
+  endDate     String? @db.VarChar(7)
+  description String  @default("") @db.VarChar(1500)
+  grade       String? @db.VarChar(40)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_educations")
+}
+
+model CvSkill {
+  id       String          @id @default(uuid()) @db.Uuid
+  cvId     String          @db.Uuid
+  position Int
+  name     String          @db.VarChar(80)
+  category CvSkillCategory @default(TECHNICAL)
+  /// 1–5, optional.
+  level    Int?            @db.SmallInt
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_skills")
+}
+
+model CvProject {
+  id           String  @id @default(uuid()) @db.Uuid
+  cvId         String  @db.Uuid
+  position     Int
+  name         String  @db.VarChar(120)
+  description  String  @default("") @db.VarChar(2000)
+  technologies String  @default("") @db.VarChar(300)
+  url          String? @db.VarChar(500)
+  githubUrl    String? @db.VarChar(500)
+  startDate    String? @db.VarChar(7)
+  endDate      String? @db.VarChar(7)
+  image        String? @db.VarChar(1000)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_projects")
+}
+
+model CvCertification {
+  id             String  @id @default(uuid()) @db.Uuid
+  cvId           String  @db.Uuid
+  position       Int
+  name           String  @db.VarChar(160)
+  issuer         String  @db.VarChar(160)
+  issueDate      String? @db.VarChar(7)
+  expirationDate String? @db.VarChar(7)
+  credentialUrl  String? @db.VarChar(500)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_certifications")
+}
+
+model CvLanguage {
+  id          String @id @default(uuid()) @db.Uuid
+  cvId        String @db.Uuid
+  position    Int
+  language    String @db.VarChar(60)
+  /// native | fluent | advanced | intermediate | basic
+  proficiency String @db.VarChar(20)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, position])
+  @@map("cv_languages")
+}
+
+/// Awards, publications, volunteer work, interests and references.
+model CvExtraItem {
+  id          String      @id @default(uuid()) @db.Uuid
+  cvId        String      @db.Uuid
+  kind        CvExtraKind
+  position    Int
+  title       String      @db.VarChar(160)
+  subtitle    String?     @db.VarChar(160)
+  date        String?     @db.VarChar(40)
+  url         String?     @db.VarChar(500)
+  description String      @default("") @db.VarChar(1500)
+
+  cv Cv @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId, kind, position])
+  @@map("cv_extra_items")
 }

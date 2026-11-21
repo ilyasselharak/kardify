@@ -155,6 +155,8 @@ export interface SessionInfo {
 export interface Features {
   appleWallet: boolean;
   googleWallet: boolean;
+  /** Server-side CV PDF export (headless Chromium) is available. */
+  cvPdf?: boolean;
   uploads: boolean;
   email: boolean;
 }

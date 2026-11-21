@@ -8,4 +8,8 @@ export const queryKeys = {
   overview: (range: string) => ["analytics", "overview", range] as const,
   cardAnalytics: (id: string, range: string) => ["analytics", "card", id, range] as const,
   sessions: ["sessions"] as const,
+  cvsAll: ["cvs"] as const,
+  cvs: ["cvs", "list"] as const,
+  cv: (id: string) => ["cvs", "detail", id] as const,
+  cvProfile: ["cv-profile"] as const,
 };
