@@ -61,6 +61,12 @@ export class AdminController {
     return this.admin.listCompanies();
   }
 
+  /** ?name= rather than a path segment, so company names with "/" or "?" work. */
+  @Get('companies/detail')
+  company(@Query('name') name?: string) {
+    return this.admin.getCompany(typeof name === 'string' ? name.slice(0, 120) : '');
+  }
+
   @Get('cards')
   cards(@Query() q: AdminCardsQueryDto) {
     return this.admin.listCards(q);

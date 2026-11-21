@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import type { AdminCard, AdminStats, AdminUser, AdminUserDetail, AuditLogEntry, CardStatus, Paginated, Role } from "@/lib/api/types";
+import type { AdminCard, AdminStats, AdminUser, AdminUserDetail, AuditLogEntry, BusinessCard, CardStatus, Paginated, Role } from "@/lib/api/types";
 
 const keys = {
   all: ["admin"] as const,
@@ -79,3 +79,23 @@ export interface AdminCompanies {
 
 export const useAdminCompanies = () =>
   useQuery({ queryKey: ["admin", "companies"], queryFn: () => api.get<AdminCompanies>("/admin/companies"), staleTime: 30_000 });
+
+export interface AdminCompanyCard extends BusinessCard {
+  views: number;
+}
+
+export interface AdminCompanyDetail {
+  name: string;
+  totals: { people: number; cards: number; activeCards: number };
+  people: {
+    user: { id: string; firstName: string; lastName: string; email: string; profileImage: string | null; emailVerified: boolean; suspendedAt: string | null; createdAt: string };
+    cards: AdminCompanyCard[];
+  }[];
+}
+
+export const useAdminCompany = (name: string) =>
+  useQuery({
+    queryKey: ["admin", "company", name.toLowerCase()],
+    queryFn: () => api.get<AdminCompanyDetail>("/admin/companies/detail", { query: { name } }),
+    enabled: !!name,
+  });

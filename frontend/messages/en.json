@@ -989,8 +989,36 @@
         "cards": "Cards",
         "published": "Published",
         "lastUpdated": "Last updated",
-        "actions": "Actions"
-      }
+        "actions": "Actions",
+        "employees": "Employees"
+      },
+      "viewEmployees": "View employees"
+    },
+    "company": {
+      "back": "Back",
+      "employees": "{count, plural, one {# employee} other {# employees}}",
+      "cards": "{count, plural, one {# card} other {# cards}}",
+      "published": "{count} published",
+      "manageCards": "Manage cards",
+      "search": "Search employees by name, email, job title or phone…",
+      "noResults": "No employee matches your search.",
+      "joined": "Joined {date}",
+      "account": "Account",
+      "suspended": "Suspended",
+      "unverified": "Unverified",
+      "openCard": "Open card {name}",
+      "updated": "Updated {date}",
+      "front": "Front",
+      "views": "{count, plural, one {# view} other {# views}}",
+      "openPublic": "Public page",
+      "fields": {
+        "jobTitle": "Job title",
+        "email": "Email",
+        "phone": "Phone",
+        "website": "Website",
+        "address": "Address"
+      },
+      "allCompanies": "All companies"
     }
   },
   "templates": {

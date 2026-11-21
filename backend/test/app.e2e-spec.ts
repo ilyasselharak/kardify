@@ -266,6 +266,12 @@ run('Kardify API (e2e)', () => {
     expect(companies.body.items).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Acme Corp', people: 1, cards: 1 })]));
     const byCompany = await user.get('/api/admin/cards?company=acme%20corp').expect(200);
     expect(byCompany.body.items.map((c: { id: string }) => c.id)).toContain(cardId);
+    const detail = await user.get('/api/admin/companies/detail?name=ACME%20corp').expect(200);
+    expect(detail.body).toMatchObject({ name: 'Acme Corp', totals: { people: 1, cards: 1 } });
+    expect(detail.body.people[0].user).toMatchObject({ email });
+    expect(detail.body.people[0].user).not.toHaveProperty('passwordHash');
+    expect(detail.body.people[0].cards[0]).toMatchObject({ id: cardId, companyName: 'Acme Corp' });
+    await user.get('/api/admin/companies/detail?name=nobody-inc').expect(404);
     const none = await user.get('/api/admin/cards?company=nobody-inc').expect(200);
     expect(none.body.total).toBe(0);
 

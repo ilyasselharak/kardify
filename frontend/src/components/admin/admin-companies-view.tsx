@@ -8,7 +8,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useAdminCompanies } from "@/lib/hooks/use-admin";
 import { useErrorMessage } from "@/lib/hooks/use-error-message";
 import { formatDate, formatNumber } from "@/lib/utils";
@@ -22,6 +22,7 @@ export function AdminCompaniesView() {
   const tc = useTranslations("common");
   const locale = useLocale();
   const errorMessage = useErrorMessage();
+  const router = useRouter();
   const companies = useAdminCompanies();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("people");
@@ -72,7 +73,7 @@ export function AdminCompaniesView() {
           <AdminTable
             head={[
               sortButton("name", t("columns.company")),
-              sortButton("people", t("columns.people")),
+              sortButton("people", t("columns.employees")),
               sortButton("cards", t("columns.cards")),
               t("columns.published"),
               t("columns.lastUpdated"),
@@ -80,11 +81,11 @@ export function AdminCompaniesView() {
             ]}
           >
             {items.map((c) => (
-              <tr key={c.name} className="transition hover:bg-muted/40">
+              <tr key={c.name} className="cursor-pointer transition hover:bg-muted/40" onClick={(e) => { if (!(e.target as HTMLElement).closest("a")) router.push(`/dashboard/admin/companies/view?name=${encodeURIComponent(c.name)}`); }}>
                 <td className="max-w-xs px-4 py-3">
                   <span className="flex items-center gap-2.5">
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Building2 className="size-4" /></span>
-                    <span dir="auto" className="truncate font-medium">{c.name}</span>
+                    <Link href={`/dashboard/admin/companies/view?name=${encodeURIComponent(c.name)}`} dir="auto" className="truncate font-medium hover:text-primary hover:underline">{c.name}</Link>
                   </span>
                 </td>
                 <td className="px-4 py-3 text-base font-semibold tabular-nums text-navy">{n(c.people)}</td>
@@ -92,8 +93,8 @@ export function AdminCompaniesView() {
                 <td className="px-4 py-3 tabular-nums text-muted-foreground">{n(c.activeCards)}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{formatDate(c.lastUpdated, locale)}</td>
                 <td className="px-4 py-3 text-end">
-                  <Link href={`/dashboard/admin/cards?company=${encodeURIComponent(c.name)}`} className="text-sm font-medium whitespace-nowrap text-primary hover:underline">
-                    {t("viewCards")}
+                  <Link href={`/dashboard/admin/companies/view?name=${encodeURIComponent(c.name)}`} className="text-sm font-medium whitespace-nowrap text-primary hover:underline">
+                    {t("viewEmployees")}
                   </Link>
                 </td>
               </tr>

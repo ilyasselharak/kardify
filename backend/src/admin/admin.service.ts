@@ -245,6 +245,41 @@ export class AdminService {
     return { items: rows, noCompany };
   }
 
+  /**
+   * One company: everyone holding a card from it (matched case-insensitively), with their
+   * account details and every card they have for this company (full design, for previews).
+   */
+  async getCompany(name: string) {
+    const company = name.trim();
+    if (!company) throw new NotFoundException({ code: 'COMPANY_NOT_FOUND', message: 'Company not found' });
+    const cards = await this.prisma.businessCard.findMany({
+      where: { companyName: { equals: company, mode: 'insensitive' } },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        user: { select: { id: true, firstName: true, lastName: true, email: true, profileImage: true, emailVerified: true, suspendedAt: true, createdAt: true } },
+        _count: { select: { analytics: { where: { eventType: 'VIEW' } } } },
+      },
+    });
+    if (cards.length === 0) throw new NotFoundException({ code: 'COMPANY_NOT_FOUND', message: 'Company not found' });
+
+    const people = new Map<string, { user: (typeof cards)[number]['user']; cards: unknown[] }>();
+    for (const { user, _count, userId: _u, ...card } of cards) {
+      const entry = people.get(user.id) ?? { user, cards: [] };
+      entry.cards.push({ ...card, views: _count.analytics, publicUrl: publicCardUrl(this.config.frontendUrl, card.slug) });
+      people.set(user.id, entry);
+    }
+    // Most common spelling as the display name.
+    const spellings = new Map<string, number>();
+    for (const c of cards) if (c.companyName) spellings.set(c.companyName, (spellings.get(c.companyName) ?? 0) + 1);
+    const displayName = [...spellings.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? company;
+
+    return {
+      name: displayName,
+      people: [...people.values()],
+      totals: { people: people.size, cards: cards.length, activeCards: cards.filter((c) => c.status === 'ACTIVE').length },
+    };
+  }
+
   async setCardStatus(admin: AuthUser, id: string, publish: boolean) {
     const card = await this.requireCard(id);
     const updated = await this.cards.setStatus(card.userId, id, publish);

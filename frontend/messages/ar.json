@@ -989,8 +989,36 @@
         "cards": "البطاقات",
         "published": "المنشورة",
         "lastUpdated": "آخر تحديث",
-        "actions": "إجراءات"
-      }
+        "actions": "إجراءات",
+        "employees": "عدد الموظفين"
+      },
+      "viewEmployees": "عرض الموظفين"
+    },
+    "company": {
+      "back": "الخلف",
+      "employees": "{count, plural, zero {لا موظفين} one {موظف واحد} two {موظفان} few {# موظفين} many {# موظفاً} other {# موظف}}",
+      "cards": "{count, plural, zero {لا بطاقات} one {بطاقة واحدة} two {بطاقتان} few {# بطاقات} many {# بطاقة} other {# بطاقة}}",
+      "published": "{count} منشورة",
+      "manageCards": "إدارة البطاقات",
+      "search": "ابحث عن موظف بالاسم أو البريد أو المسمى الوظيفي أو الهاتف…",
+      "noResults": "لا يوجد موظف يطابق البحث.",
+      "joined": "انضم في {date}",
+      "account": "الحساب",
+      "suspended": "موقوف",
+      "unverified": "غير مؤكد",
+      "openCard": "فتح بطاقة {name}",
+      "updated": "آخر تحديث {date}",
+      "front": "الأمام",
+      "views": "{count, plural, zero {لا مشاهدات} one {مشاهدة واحدة} two {مشاهدتان} few {# مشاهدات} many {# مشاهدة} other {# مشاهدة}}",
+      "openPublic": "الصفحة العامة",
+      "fields": {
+        "jobTitle": "المسمى الوظيفي",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "website": "الموقع",
+        "address": "العنوان"
+      },
+      "allCompanies": "كل الشركات"
     }
   },
   "templates": {
