@@ -21,6 +21,10 @@ export class AdminCardsQueryDto extends PageQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(100) search?: string;
   @ApiPropertyOptional({ enum: ['DRAFT', 'ACTIVE', 'INACTIVE'] })
   @IsOptional() @IsIn(['DRAFT', 'ACTIVE', 'INACTIVE']) status?: 'DRAFT' | 'ACTIVE' | 'INACTIVE';
+  /** Exact company name (case-insensitive). */
+  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsString() @MaxLength(120) company?: string;
+  /** Only cards without a company. */
+  @ApiPropertyOptional() @IsOptional() @IsIn(['1', 'true']) noCompany?: string;
 }
 
 export class AdminUpdateUserDto {

@@ -56,6 +56,11 @@ export class AdminController {
     return this.admin.deleteUser(me, id);
   }
 
+  @Get('companies')
+  companies() {
+    return this.admin.listCompanies();
+  }
+
   @Get('cards')
   cards(@Query() q: AdminCardsQueryDto) {
     return this.admin.listCards(q);

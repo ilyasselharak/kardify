@@ -85,6 +85,24 @@ run('Kardify API (e2e)', () => {
     expect(vcf.text).toContain('FN:E2E User');
   });
 
+  it('suggests company names without leaking other users\' drafts', async () => {
+    await user.patch(`/api/cards/${cardId}`).set('x-kardify-csrf', '1').send({ companyName: 'Acme Corp' }).expect(200);
+    const other = agent();
+    const otherEmail = `co-${Date.now()}@example.com`;
+    await other.post('/api/auth/register').set('x-kardify-csrf', '1').send({ firstName: 'C', lastName: 'O', email: otherEmail, password, confirmPassword: password, acceptTerms: true });
+    await other.post('/api/auth/verify-email').set('x-kardify-csrf', '1').send({ token: tokenFrom('verifyEmail') });
+    await other.post('/api/cards').set('x-kardify-csrf', '1').send({ name: 'Draft', companyName: 'Secret Startup' }).expect(201);
+
+    // Published card of another user → suggested; another user's draft → never suggested.
+    const fromOther = await other.get('/api/cards/companies?q=acme').expect(200);
+    expect(fromOther.body).toContain('Acme Corp');
+    const leak = await user.get('/api/cards/companies?q=secret').expect(200);
+    expect(leak.body).toEqual([]);
+    // LIKE wildcards in the query are treated literally.
+    expect((await user.get('/api/cards/companies?q=%25').expect(200)).body).toEqual([]);
+    await other.delete('/api/users/me').set('x-kardify-csrf', '1').send({ password });
+  });
+
   it('enforces ownership on private endpoints', async () => {
     const other = agent();
     const otherEmail = `other-${Date.now()}@example.com`;
@@ -242,6 +260,14 @@ run('Kardify API (e2e)', () => {
     const me = await user.get('/api/auth/me').expect(200);
     const self = await user.post(`/api/admin/users/${me.body.user.id}/suspend`).set('x-kardify-csrf', '1').expect(400);
     expect(self.body.code).toBe('CANNOT_MODIFY_SELF');
+
+    // Company list + company filter
+    const companies = await user.get('/api/admin/companies').expect(200);
+    expect(companies.body.items).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Acme Corp' })]));
+    const byCompany = await user.get('/api/admin/cards?company=acme%20corp').expect(200);
+    expect(byCompany.body.items.map((c: { id: string }) => c.id)).toContain(cardId);
+    const none = await user.get('/api/admin/cards?company=nobody-inc').expect(200);
+    expect(none.body.total).toBe(0);
 
     // Card moderation
     await user.post(`/api/admin/cards/${cardId}/deactivate`).set('x-kardify-csrf', '1').expect(200);

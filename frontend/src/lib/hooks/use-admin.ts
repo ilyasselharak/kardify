@@ -34,7 +34,7 @@ export const useAdminUsers = (params: AdminUsersParams) =>
 export const useAdminUser = (id: string | undefined) =>
   useQuery({ queryKey: keys.user(id ?? ""), queryFn: () => api.get<AdminUserDetail>(`/admin/users/${id}`), enabled: !!id });
 
-export const useAdminCards = (params: { search?: string; status?: CardStatus; page?: number; pageSize?: number }) =>
+export const useAdminCards = (params: { search?: string; status?: CardStatus; company?: string; noCompany?: string; page?: number; pageSize?: number }) =>
   useQuery({
     queryKey: keys.cards(params),
     queryFn: ({ signal }) => api.get<Paginated<AdminCard>>("/admin/cards", { query: { ...params }, signal }),
@@ -71,3 +71,11 @@ export const useAdminDeleteUser = () => useAdminMutation((id: string) => api.del
 export const useAdminSetCardStatus = () =>
   useAdminMutation(({ id, active }: { id: string; active: boolean }) => api.post(`/admin/cards/${id}/${active ? "activate" : "deactivate"}`));
 export const useAdminDeleteCard = () => useAdminMutation((id: string) => api.delete<void>(`/admin/cards/${id}`));
+
+export interface AdminCompanies {
+  items: { name: string; cards: number }[];
+  noCompany: number;
+}
+
+export const useAdminCompanies = () =>
+  useQuery({ queryKey: ["admin", "companies"], queryFn: () => api.get<AdminCompanies>("/admin/companies"), staleTime: 30_000 });

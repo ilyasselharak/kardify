@@ -20,6 +20,12 @@ export class CardsController {
     return this.cards.create(user.id, dto);
   }
 
+  /** Declared before `:id` so "companies" is not parsed as a card id. */
+  @Get('companies')
+  companies(@CurrentUser() user: AuthUser, @Query('q') q?: string) {
+    return this.cards.companySuggestions(user.id, typeof q === 'string' ? q : '');
+  }
+
   @Get(':id')
   get(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.cards.get(user.id, id);

@@ -203,7 +203,7 @@ export function PublicCardView({ card, mode = "live", source }: { card: PublicCa
 
         <footer className="mt-8 flex flex-col items-center gap-2 text-xs text-muted-foreground">
           <Link href="/" className="flex items-center gap-1.5 font-medium hover:text-foreground">
-            {t("poweredBy")} <LogoMark className="size-4" /> <span dir="ltr" className="font-semibold text-navy">Kardify</span>
+            {t("poweredBy")} <LogoMark className="size-5" /> <span dir="ltr" className="font-semibold text-navy">Kardify</span>
           </Link>
           <Link href="/register" className="text-primary hover:underline">{t("createYours")}</Link>
         </footer>

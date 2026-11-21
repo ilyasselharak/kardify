@@ -98,7 +98,7 @@ export function PublicCvView({ doc, url, slug, allowDownload, mode = "live", onD
       {banner}
       <header className={cn("no-print z-30 border-b border-border bg-card/90 backdrop-blur-lg", stickyHeader && "sticky top-0")}>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link href="/" className="shrink-0" aria-label="Kardify"><Logo className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" /></Link>
+          <Link href="/" className="shrink-0" aria-label="Kardify"><Logo responsive /></Link>
           <div className="min-w-0 flex-1">
             <p dir="auto" className="truncate text-sm font-semibold text-navy">{p.fullName}</p>
             {p.professionalTitle && <p dir="auto" className="truncate text-xs text-muted-foreground">{p.professionalTitle}</p>}

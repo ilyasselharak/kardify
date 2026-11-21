@@ -340,7 +340,8 @@
       "label": "لوحة التحكم",
       "groups": {
         "main": "الرئيسية",
-        "account": "الحساب"
+        "account": "الحساب",
+        "admin": "الإدارة"
       },
       "cv": "سيرتي الذاتية",
       "templates": "القوالب",
@@ -895,7 +896,8 @@
       "admin": "المسؤول",
       "action": "الإجراء",
       "target": "الهدف",
-      "details": "التفاصيل"
+      "details": "التفاصيل",
+      "company": "الشركة"
     },
     "verified": "موثّق",
     "unverified": "غير موثّق",
@@ -964,7 +966,12 @@
       "card_activate": "تفعيل بطاقة",
       "card_deactivate": "إيقاف تفعيل بطاقة",
       "card_delete": "حذف بطاقة"
-    }
+    },
+    "allCompanies": "كل الشركات",
+    "noCompany": "بدون شركة",
+    "clearCompany": "إزالة فلتر الشركة",
+    "companyCount": "{count, plural, zero {لا بطاقات} one {بطاقة واحدة} two {بطاقتان} few {# بطاقات} many {# بطاقة} other {# بطاقة}}",
+    "filterByCompany": "عرض هذه الشركة فقط"
   },
   "templates": {
     "title": "القوالب",
@@ -1474,5 +1481,9 @@
     },
     "edit": "تعديل",
     "publish": "المشاركة والنشر"
+  },
+  "company": {
+    "suggestions": "اقتراحات الشركات",
+    "existing": "شركات مسجّلة"
   }
 }

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Controller, useFormContext } from "react-hook-form";
 import { FormField } from "@/components/ui/form-field";
+import { CompanyInput } from "@/components/ui/company-input";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +34,9 @@ export function StepPersonal() {
           <Input id="jobTitle" dir="auto" placeholder={t("jobTitlePlaceholder")} {...register("jobTitle")} />
         </FormField>
         <FormField id="companyName" label={t("company")} optional error={errors.companyName?.message}>
-          <Input id="companyName" dir="auto" placeholder={t("companyPlaceholder")} {...register("companyName")} />
+          <Controller control={control} name="companyName" render={({ field }) => (
+            <CompanyInput id="companyName" placeholder={t("companyPlaceholder")} value={field.value} onChange={field.onChange} onBlur={field.onBlur} invalid={!!errors.companyName} />
+          )} />
         </FormField>
       </div>
       <FormField id="description" label={t("description")} optional error={errors.description?.message}>

@@ -40,7 +40,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")} className="mb-6" />
-      <nav className="mb-8 flex gap-1 overflow-x-auto border-b border-border">
+      {/* The sidebar holds these links on large screens; tabs stay for quick switching on mobile. */}
+      <nav className="mb-8 flex gap-1 overflow-x-auto border-b border-border lg:hidden">
         {TABS.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
           return (

@@ -340,7 +340,8 @@
       "label": "Dashboard",
       "groups": {
         "main": "Main",
-        "account": "Account"
+        "account": "Account",
+        "admin": "Administration"
       },
       "cv": "My CV / Resume",
       "templates": "Templates",
@@ -895,7 +896,8 @@
       "admin": "Admin",
       "action": "Action",
       "target": "Target",
-      "details": "Details"
+      "details": "Details",
+      "company": "Company"
     },
     "verified": "Verified",
     "unverified": "Unverified",
@@ -964,7 +966,12 @@
       "card_activate": "Activated card",
       "card_deactivate": "Deactivated card",
       "card_delete": "Deleted card"
-    }
+    },
+    "allCompanies": "All companies",
+    "noCompany": "No company",
+    "clearCompany": "Clear company filter",
+    "companyCount": "{count, plural, one {# card} other {# cards}}",
+    "filterByCompany": "Show only this company"
   },
   "templates": {
     "title": "Templates",
@@ -1474,5 +1481,9 @@
     },
     "edit": "Edit",
     "publish": "Share & publish"
+  },
+  "company": {
+    "suggestions": "Company suggestions",
+    "existing": "Existing companies"
   }
 }

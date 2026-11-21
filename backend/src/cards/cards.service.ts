@@ -59,6 +59,24 @@ export class CardsService {
     };
   }
 
+  /**
+   * Company-name suggestions: names from the user's own cards and from published cards (already
+   * public), so drafts of other users never leak. Grouped case-insensitively, most used first.
+   */
+  async companySuggestions(userId: string, q = '') {
+    const term = `%${q.trim().slice(0, 60).replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    const rows = await this.prisma.$queryRaw<{ name: string }[]>`
+      SELECT MODE() WITHIN GROUP (ORDER BY TRIM("companyName")) AS name
+      FROM business_cards
+      WHERE "companyName" IS NOT NULL AND TRIM("companyName") <> ''
+        AND ("userId" = ${userId}::uuid OR status = 'ACTIVE')
+        AND "companyName" ILIKE ${term}
+      GROUP BY LOWER(TRIM("companyName"))
+      ORDER BY COUNT(*) DESC, name ASC
+      LIMIT 10`;
+    return rows.map((r) => r.name);
+  }
+
   async get(userId: string, id: string) {
     return this.serialize(await this.findOwned(userId, id));
   }

@@ -13,13 +13,13 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { User } from "@/lib/api/types";
 import { useUpdateProfile } from "@/lib/hooks/use-account";
 import { useLogout, useMe } from "@/lib/hooks/use-auth";
 import { cn, initials } from "@/lib/utils";
 import { VerifyEmailView } from "@/components/auth/verify-email-view";
-import { DASHBOARD_NAV } from "./nav-items";
+import { ADMIN_NAV, DASHBOARD_NAV, isAdminPath } from "./nav-items";
 
 function useLogoutAction() {
   const logout = useLogout();
@@ -39,16 +39,17 @@ function useLogoutAction() {
 
 function SidebarNav({ onNavigate, isAdmin }: { onNavigate?: () => void; isAdmin?: boolean }) {
   const t = useTranslations("dashboard.nav");
-  const ta = useTranslations("admin");
+  const ta = useTranslations("admin.tabs");
   const pathname = usePathname();
   const logout = useLogoutAction();
+  const groups = isAdmin ? ADMIN_NAV : DASHBOARD_NAV;
 
   return (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3" aria-label={t("label")}>
-      {DASHBOARD_NAV.map(({ group, items }) => (
+      {groups.map(({ group, items }) => (
         <div key={group} className="grid gap-1 pb-3">
           <p className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground/80 uppercase">{t(`groups.${group}`)}</p>
-          {items.map(({ href, key, icon: Icon, match }) => {
+          {items.map(({ href, key, admin, icon: Icon, match }) => {
             const active = match(pathname);
             return (
               <Link
@@ -58,33 +59,16 @@ function SidebarNav({ onNavigate, isAdmin }: { onNavigate?: () => void; isAdmin?
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                  active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  active ? (admin ? "bg-navy text-white" : "bg-primary/10 text-primary") : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 <Icon className="size-[18px]" />
-                {t(key)}
+                {admin ? ta(key) : t(key)}
               </Link>
             );
           })}
         </div>
       ))}
-      {isAdmin && (
-        <>
-          <div className="mx-3 mb-3 h-px bg-border" />
-          <Link
-            href="/dashboard/admin"
-            onClick={onNavigate}
-            aria-current={pathname.startsWith("/dashboard/admin") ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-              pathname.startsWith("/dashboard/admin") ? "bg-navy text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <ShieldCheck className="size-[18px]" />
-            {ta("nav")}
-          </Link>
-        </>
-      )}
       <button
         type="button"
         onClick={logout.run}
@@ -118,7 +102,7 @@ function UserMenu({ user }: { user: User }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild><Link href="/dashboard/settings/profile">{t("profile")}</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link href="/dashboard/settings/preferences">{t("settings")}</Link></DropdownMenuItem>
+        {user.role !== "ADMIN" && <DropdownMenuItem asChild><Link href="/dashboard/settings/preferences">{t("settings")}</Link></DropdownMenuItem>}
         <DropdownMenuItem asChild><Link href="/dashboard/help">{t("help")}</Link></DropdownMenuItem>
         {user.role === "ADMIN" && <DropdownMenuItem asChild><Link href="/dashboard/admin"><ShieldCheck /> {ta("nav")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />
@@ -128,6 +112,27 @@ function UserMenu({ user }: { user: User }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+/**
+ * Admins manage the platform and don't use the client tools: client pages send them to the
+ * admin console. Rendered only once the user is known (pathname is runtime data in Next 16).
+ */
+function RoleGate({ isAdmin, children }: { isAdmin: boolean; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const redirect = isAdmin && !isAdminPath(pathname);
+  useEffect(() => {
+    if (redirect) router.replace("/dashboard/admin");
+  }, [redirect, router]);
+  if (redirect) {
+    return (
+      <div className="flex min-h-[50dvh] items-center justify-center">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  return children;
 }
 
 /** Authenticated app shell: sidebar, top bar, auth + verification gate. */
@@ -172,7 +177,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">
       <aside className="sticky top-0 hidden h-dvh flex-col border-e border-border bg-card lg:flex">
         <div className="flex h-16 items-center px-6">
-          <Link href="/dashboard"><Logo /></Link>
+          <Link href={user.role === "ADMIN" ? "/dashboard/admin" : "/dashboard"}><Logo /></Link>
         </div>
         <SidebarNav isAdmin={user.role === "ADMIN"} />
       </aside>
@@ -191,14 +196,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </SheetClose>
               </SheetContent>
             </Sheet>
-            <Link href="/dashboard" className="sm:hidden"><Logo className="[&>span:last-child]:hidden" /></Link>
+            <Link href={user.role === "ADMIN" ? "/dashboard/admin" : "/dashboard"} className="sm:hidden"><Logo compact /></Link>
           </div>
           <div className="ms-auto flex items-center gap-2">
             <LocaleSwitcher onChange={onLocaleChange} />
             <UserMenu user={user} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <RoleGate isAdmin={user.role === "ADMIN"}>{children}</RoleGate>
+        </main>
       </div>
     </div>
   );

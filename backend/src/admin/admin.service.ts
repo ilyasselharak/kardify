@@ -188,6 +188,7 @@ export class AdminService {
     const { page, pageSize, skip } = paging(q);
     const where: Prisma.BusinessCardWhereInput = {
       ...(q.status ? { status: q.status } : {}),
+      ...(q.noCompany ? { companyName: null } : q.company ? { companyName: { equals: q.company, mode: 'insensitive' } } : {}),
       ...(q.search
         ? {
             OR: [
@@ -220,6 +221,19 @@ export class AdminService {
       page,
       pageSize,
     };
+  }
+
+  /** Every company used on a card (case-insensitive groups) with its card count, for filtering. */
+  async listCompanies() {
+    const rows = await this.prisma.$queryRaw<{ name: string; cards: number }[]>`
+      SELECT MODE() WITHIN GROUP (ORDER BY TRIM("companyName")) AS name, COUNT(*)::int AS cards
+      FROM business_cards
+      WHERE "companyName" IS NOT NULL AND TRIM("companyName") <> ''
+      GROUP BY LOWER(TRIM("companyName"))
+      ORDER BY cards DESC, name ASC
+      LIMIT 1000`;
+    const noCompany = await this.prisma.businessCard.count({ where: { companyName: null } });
+    return { items: rows, noCompany };
   }
 
   async setCardStatus(admin: AuthUser, id: string, publish: boolean) {

@@ -63,3 +63,14 @@ export const useUnpublishCard = () => useCardMutation((id: string) => api.post<B
 export const useRegenerateLink = () => useCardMutation((id: string) => api.post<BusinessCard>(`/cards/${id}/regenerate-link`));
 export const useUpdateQrSettings = () =>
   useCardMutation(({ id, data }: { id: string; data: QrSettings }) => api.patch<BusinessCard>(`/cards/${id}/qr-settings`, data));
+
+/** Company-name suggestions (own cards + published cards), cached per query. */
+export function useCompanySuggestions(q: string, enabled = true) {
+  return useQuery({
+    queryKey: ["cards", "companies", q.toLowerCase()],
+    queryFn: ({ signal }) => api.get<string[]>("/cards/companies", { query: { q }, signal }),
+    enabled,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+}

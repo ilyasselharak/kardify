@@ -9,6 +9,7 @@ import { FlippableCard } from "@/components/cards/business-card";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { CompanyInput } from "@/components/ui/company-input";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "@/i18n/navigation";
@@ -73,7 +74,7 @@ export function NewCardView() {
                 <Input id="jobTitle" dir="auto" maxLength={120} value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder={tw("jobTitlePlaceholder")} />
               </FormField>
               <FormField id="companyName" label={tw("company")} optional>
-                <Input id="companyName" dir="auto" maxLength={120} value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={tw("companyPlaceholder")} />
+                <CompanyInput id="companyName" value={companyName} onChange={setCompanyName} placeholder={tw("companyPlaceholder")} />
               </FormField>
             </div>
           </section>

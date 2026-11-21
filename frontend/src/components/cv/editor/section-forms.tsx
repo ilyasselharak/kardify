@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CompanyInput } from "@/components/ui/company-input";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/wizard/image-upload";
 import { emptyExtra, emptyItem, moveItem, newKey } from "@/lib/cv/draft";
@@ -150,7 +152,11 @@ export function ExperienceForm() {
                 <div className="@container grid gap-3.5">
                   <div className="grid gap-3.5 @md:grid-cols-2">
                     <TextField id={`${r._key}-jt`} label={t("jobTitle")} value={r.jobTitle} onChange={(jobTitle) => c.update(r._key, { jobTitle })} onBlur={() => c.touch(r._key, "jobTitle")} error={c.error(r._key, "jobTitle")} maxLength={120} />
-                    <TextField id={`${r._key}-co`} label={t("company")} value={r.company} onChange={(company) => c.update(r._key, { company })} onBlur={() => c.touch(r._key, "company")} error={c.error(r._key, "company")} maxLength={120} />
+                    <div className="grid gap-1.5">
+                      <Label htmlFor={`${r._key}-co`} className="text-xs font-medium text-muted-foreground">{t("company")}</Label>
+                      <CompanyInput id={`${r._key}-co`} value={r.company} onChange={(company) => c.update(r._key, { company })} onBlur={() => c.touch(r._key, "company")} invalid={!!c.error(r._key, "company")} />
+                      <FieldError error={c.error(r._key, "company")} />
+                    </div>
                     <TextField id={`${r._key}-loc`} label={t("location")} value={r.location ?? ""} onChange={(location) => c.update(r._key, { location })} optional />
                     <SelectField
                       id={`${r._key}-type`}

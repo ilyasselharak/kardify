@@ -1,8 +1,10 @@
-import { BarChart3, CreditCard, FileText, HelpCircle, LayoutDashboard, LayoutTemplate, Settings, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
+import { BarChart3, CreditCard, FileText, HelpCircle, LayoutDashboard, LayoutTemplate, ScrollText, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
+  /** Translation key; admin items use the `admin.tabs` namespace. */
   key: string;
+  admin?: boolean;
   icon: LucideIcon;
   /** Pathnames (locale-free) that mark this item as active. */
   match: (pathname: string) => boolean;
@@ -31,3 +33,27 @@ export const DASHBOARD_NAV: { group: "main" | "account"; items: NavItem[] }[] = 
     ],
   },
 ];
+
+/** Admins manage the platform; they don't get the client tools (cards, CVs, templates). */
+export const ADMIN_NAV: { group: "admin" | "account"; items: NavItem[] }[] = [
+  {
+    group: "admin",
+    items: [
+      { href: "/dashboard/admin", key: "overview", admin: true, icon: LayoutDashboard, match: (p) => p === "/dashboard/admin" },
+      { href: "/dashboard/admin/users", key: "users", admin: true, icon: Users, match: under("/dashboard/admin/users") },
+      { href: "/dashboard/admin/cards", key: "cards", admin: true, icon: CreditCard, match: under("/dashboard/admin/cards") },
+      { href: "/dashboard/admin/audit", key: "audit", admin: true, icon: ScrollText, match: under("/dashboard/admin/audit") },
+    ],
+  },
+  {
+    group: "account",
+    items: [
+      { href: "/dashboard/settings/profile", key: "profile", icon: UserRound, match: (p) => p === "/dashboard/settings" || p === "/dashboard/settings/profile" },
+      { href: "/dashboard/settings/security", key: "security", icon: ShieldCheck, match: (p) => p === "/dashboard/settings/security" },
+    ],
+  },
+];
+
+/** Pages an admin may open; everything else in the dashboard redirects to the admin console. */
+export const isAdminPath = (p: string) =>
+  p.startsWith("/dashboard/admin") || p.startsWith("/dashboard/settings") || p.startsWith("/dashboard/help");

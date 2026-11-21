@@ -34,7 +34,7 @@ export function Navbar() {
     <header className={cn("sticky top-0 z-40 transition-all", scrolled ? "border-b border-border bg-white/80 backdrop-blur-lg" : "bg-transparent")}>
       <nav className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" aria-label="Kardify">
-          <Logo />
+          <Logo priority />
         </Link>
         <ul className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
